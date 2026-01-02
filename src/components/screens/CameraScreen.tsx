@@ -5,7 +5,8 @@ import { ArrowLeft, Camera, Image, X, CheckCircle, RotateCcw } from 'lucide-reac
 
 const CameraScreen: React.FC = () => {
   const { t, setCurrentScreen, selectedCrop, setCapturedImage, language } = useApp();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -23,8 +24,8 @@ const CameraScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Camera access denied:', error);
-      // Fallback to file input
-      fileInputRef.current?.click();
+      // Fallback to camera file input
+      cameraInputRef.current?.click();
     }
   }, []);
 
@@ -150,7 +151,7 @@ const CameraScreen: React.FC = () => {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => galleryInputRef.current?.click()}
                 className="w-full gap-3 bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20"
               >
                 <Image className="w-5 h-5" />
@@ -158,8 +159,18 @@ const CameraScreen: React.FC = () => {
               </Button>
             </div>
 
+            {/* Gallery input - no capture attribute to allow file picker */}
             <input
-              ref={fileInputRef}
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            
+            {/* Camera input - with capture for direct camera access */}
+            <input
+              ref={cameraInputRef}
               type="file"
               accept="image/*"
               capture="environment"
