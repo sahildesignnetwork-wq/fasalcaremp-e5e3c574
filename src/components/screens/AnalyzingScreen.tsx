@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Leaf, Search, Sparkles } from 'lucide-react';
+import { Leaf, Search, Sparkles, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const AnalyzingScreen: React.FC = () => {
   const { 
@@ -14,99 +15,123 @@ const AnalyzingScreen: React.FC = () => {
     language 
   } = useApp();
   const { toast } = useToast();
+  const [status, setStatus] = useState<'scanning' | 'identifying' | 'preparing'>('scanning');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const analyzeImage = async () => {
-      if (!capturedImage) {
+      if (!capturedImage || !selectedCrop) {
         setCurrentScreen('camera');
         return;
       }
 
       try {
-        // Simulate API call delay for demo
-        // In production, this would call the actual OpenAI API via edge function
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Update status through the stages
+        setTimeout(() => setStatus('identifying'), 1000);
+        setTimeout(() => setStatus('preparing'), 2500);
 
-        // Mock result for demo (replace with actual API call)
-        const mockResult = {
-          id: 'demo-1',
-          diseaseNameHi: 'पत्ती झुलसा रोग',
-          diseaseNameEn: 'Leaf Blight Disease',
-          confidence: 87,
-          severity: 'medium' as const,
+        console.log('Sending image to AI for analysis...');
+        
+        // Call the edge function
+        const { data, error: functionError } = await supabase.functions.invoke('detect-disease', {
+          body: {
+            imageBase64: capturedImage,
+            cropName: selectedCrop.nameEn,
+            cropNameHi: selectedCrop.nameHi,
+          }
+        });
+
+        if (functionError) {
+          console.error('Edge function error:', functionError);
+          throw new Error(functionError.message || 'Analysis failed');
+        }
+
+        console.log('AI Response:', data);
+
+        // Check if disease was detected
+        if (!data.detected) {
+          // No disease detected or unable to analyze
+          setError(data.message || t(
+            'रोग का पता नहीं लगाया जा सका। कृपया स्पष्ट फोटो से पुनः प्रयास करें।',
+            'Could not detect disease. Please try again with a clearer photo.'
+          ));
+          return;
+        }
+
+        // Disease detected - set results
+        const result = {
+          id: `analysis-${Date.now()}`,
+          diseaseNameHi: data.diseaseNameHi || 'अज्ञात रोग',
+          diseaseNameEn: data.diseaseNameEn || 'Unknown Disease',
+          confidence: data.confidence || 75,
+          severity: data.severity || 'medium',
           imageUrl: capturedImage,
         };
 
-        const mockAdvisory = {
-          causeHi: 'यह रोग फफूंद (फंगस) के कारण होता है जो नम और गर्म मौसम में फैलता है।',
-          causeEn: 'This disease is caused by fungus that spreads in humid and warm weather conditions.',
-          preventionHi: [
-            'बीज उपचार करें',
-            'फसल चक्र अपनाएं',
-            'प्रभावित पौधों को हटाएं',
-            'खेत में जल निकासी सुनिश्चित करें',
-          ],
-          preventionEn: [
-            'Treat seeds before sowing',
-            'Follow crop rotation',
-            'Remove affected plants',
-            'Ensure proper drainage in field',
-          ],
-          organicTreatmentHi: [
-            'नीम तेल का छिड़काव करें (5ml/लीटर पानी)',
-            'ट्राइकोडर्मा का उपयोग करें',
-            'जैविक खाद का उपयोग करें',
-          ],
-          organicTreatmentEn: [
-            'Spray neem oil (5ml/liter water)',
-            'Use Trichoderma',
-            'Apply organic manure',
-          ],
-          chemicalTreatmentHi: [
-            {
-              name: 'मैंकोज़ेब 75% WP',
-              dosage: '2.5 ग्राम/लीटर पानी',
-              interval: '10-15 दिन के अंतराल पर',
-            },
-            {
-              name: 'कार्बेन्डाजिम 50% WP',
-              dosage: '1 ग्राम/लीटर पानी',
-              interval: '15 दिन के अंतराल पर',
-            },
-          ],
-          chemicalTreatmentEn: [
-            {
-              name: 'Mancozeb 75% WP',
-              dosage: '2.5 gm/liter water',
-              interval: 'At 10-15 days interval',
-            },
-            {
-              name: 'Carbendazim 50% WP',
-              dosage: '1 gm/liter water',
-              interval: 'At 15 days interval',
-            },
-          ],
+        const advisory = {
+          causeHi: data.causeHi || 'कारण की जानकारी उपलब्ध नहीं',
+          causeEn: data.causeEn || 'Cause information not available',
+          preventionHi: data.preventionHi || ['उचित देखभाल करें'],
+          preventionEn: data.preventionEn || ['Take proper care'],
+          organicTreatmentHi: data.organicTreatmentHi || ['जैविक उपचार उपलब्ध नहीं'],
+          organicTreatmentEn: data.organicTreatmentEn || ['Organic treatment not available'],
+          chemicalTreatmentHi: data.chemicalTreatmentHi,
+          chemicalTreatmentEn: data.chemicalTreatmentEn,
         };
 
-        setDiseaseResult(mockResult);
-        setAdvisory(mockAdvisory);
+        setDiseaseResult(result);
+        setAdvisory(advisory);
         setCurrentScreen('result');
-      } catch (error) {
-        console.error('Analysis failed:', error);
-        toast({
-          title: t('विश्लेषण विफल', 'Analysis Failed'),
-          description: t(
-            'कृपया दोबारा प्रयास करें',
-            'Please try again'
-          ),
-          variant: 'destructive',
-        });
-        setCurrentScreen('camera');
+        
+      } catch (err) {
+        console.error('Analysis failed:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        
+        // Show specific error messages
+        if (errorMessage.includes('busy') || errorMessage.includes('429')) {
+          setError(t(
+            'सेवा व्यस्त है। कृपया कुछ समय बाद पुनः प्रयास करें।',
+            'Service is busy. Please try again in a moment.'
+          ));
+        } else if (errorMessage.includes('credits') || errorMessage.includes('402')) {
+          setError(t(
+            'सेवा अस्थायी रूप से अनुपलब्ध है।',
+            'Service temporarily unavailable.'
+          ));
+        } else {
+          setError(t(
+            'विश्लेषण विफल। कृपया पुनः प्रयास करें।',
+            'Analysis failed. Please try again.'
+          ));
+        }
       }
     };
 
     analyzeImage();
-  }, [capturedImage, setCurrentScreen, setDiseaseResult, setAdvisory, t, toast]);
+  }, [capturedImage, selectedCrop, setCurrentScreen, setDiseaseResult, setAdvisory, t, language]);
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex flex-col items-center justify-center p-6">
+        <div className="bg-card rounded-3xl p-8 shadow-lg max-w-sm w-full text-center animate-fade-in-scale">
+          <div className="w-20 h-20 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-12 h-12 text-error" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground mb-3">
+            {t('विश्लेषण असफल', 'Analysis Failed')}
+          </h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <button
+            onClick={() => setCurrentScreen('camera')}
+            className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-xl font-medium hover:bg-primary/90 transition-colors"
+          >
+            {t('पुनः प्रयास करें', 'Try Again')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col items-center justify-center p-6">
@@ -155,15 +180,19 @@ const AnalyzingScreen: React.FC = () => {
           <ProgressStep 
             icon={<Search className="w-4 h-4" />}
             text={t('छवि को स्कैन किया जा रहा है', 'Scanning image')}
-            active
+            active={status === 'scanning'}
+            completed={status !== 'scanning'}
           />
           <ProgressStep 
             icon={<Leaf className="w-4 h-4" />}
             text={t('रोग पहचान चल रही है', 'Identifying disease')}
+            active={status === 'identifying'}
+            completed={status === 'preparing'}
           />
           <ProgressStep 
             icon={<Sparkles className="w-4 h-4" />}
             text={t('सलाह तैयार हो रही है', 'Preparing advisory')}
+            active={status === 'preparing'}
           />
         </div>
       </div>
@@ -178,19 +207,30 @@ const AnalyzingScreen: React.FC = () => {
   );
 };
 
-const ProgressStep: React.FC<{ icon: React.ReactNode; text: string; active?: boolean }> = ({ 
+interface ProgressStepProps {
+  icon: React.ReactNode;
+  text: string;
+  active?: boolean;
+  completed?: boolean;
+}
+
+const ProgressStep: React.FC<ProgressStepProps> = ({ 
   icon, 
   text, 
-  active 
+  active,
+  completed 
 }) => (
-  <div className={`flex items-center gap-3 ${active ? 'opacity-100' : 'opacity-50'}`}>
-    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-      active ? 'bg-accent text-accent-foreground' : 'bg-primary-foreground/20 text-primary-foreground'
+  <div className={`flex items-center gap-3 transition-opacity ${active ? 'opacity-100' : completed ? 'opacity-70' : 'opacity-40'}`}>
+    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+      active ? 'bg-accent text-accent-foreground' : 
+      completed ? 'bg-success text-success-foreground' : 
+      'bg-primary-foreground/20 text-primary-foreground'
     }`}>
       {icon}
     </div>
     <span className="text-primary-foreground text-sm">{text}</span>
     {active && <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />}
+    {completed && <span className="text-success">✓</span>}
   </div>
 );
 
