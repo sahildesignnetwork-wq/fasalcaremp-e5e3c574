@@ -141,7 +141,7 @@ const CameraScreen: React.FC = () => {
               <Button
                 variant="hero"
                 size="xl"
-                onClick={startCamera}
+                onClick={() => cameraInputRef.current?.click()}
                 className="w-full gap-3"
               >
                 <Camera className="w-6 h-6" />
