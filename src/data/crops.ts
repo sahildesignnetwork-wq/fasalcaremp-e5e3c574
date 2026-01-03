@@ -2,7 +2,7 @@ import { Crop } from '@/types';
 
 export const crops: Crop[] = [
   // Kharif Crops
-  { id: 'soybean', nameHi: 'सोयाबीन', nameEn: 'Soybean', icon: '🫘', season: 'kharif' },
+  { id: 'soybean', nameHi: 'सोयाबीन', nameEn: 'Soybean', icon: '🫘', season: 'kharif', popDocument: '/pop/soybean.docx' },
   { id: 'rice', nameHi: 'धान', nameEn: 'Rice (Paddy)', icon: '🌾', season: 'kharif', popDocument: '/pop/paddy.docx' },
   { id: 'maize', nameHi: 'मक्का', nameEn: 'Maize', icon: '🌽', season: 'kharif', popDocument: '/pop/maize.docx' },
   { id: 'cotton', nameHi: 'कपास', nameEn: 'Cotton', icon: '🧶', season: 'kharif', popDocument: '/pop/cotton.docx' },
@@ -33,7 +33,7 @@ export const crops: Crop[] = [
   { id: 'citrus', nameHi: 'नींबू वर्ग', nameEn: 'Citrus', icon: '🍊', season: 'horticulture', popDocument: '/pop/citrus.docx' },
   { id: 'guava', nameHi: 'अमरूद', nameEn: 'Guava', icon: '🍐', season: 'horticulture', popDocument: '/pop/guava.docx' },
   { id: 'papaya', nameHi: 'पपीता', nameEn: 'Papaya', icon: '🥭', season: 'horticulture', popDocument: '/pop/papaya.docx' },
-  { id: 'banana', nameHi: 'केला', nameEn: 'Banana', icon: '🍌', season: 'horticulture' },
+  { id: 'banana', nameHi: 'केला', nameEn: 'Banana', icon: '🍌', season: 'horticulture', popDocument: '/pop/banana.docx' },
 ];
 
 export const seasonLabels = {
