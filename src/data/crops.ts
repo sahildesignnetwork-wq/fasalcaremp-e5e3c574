@@ -24,15 +24,15 @@ export const crops: Crop[] = [
   { id: 'oat', nameHi: 'जई', nameEn: 'Oat', icon: '🥣', season: 'rabi', popDocument: '/pop/oat.docx' },
 
   // Horticulture Crops
-  { id: 'tomato', nameHi: 'टमाटर', nameEn: 'Tomato', icon: '🍅', season: 'horticulture' },
-  { id: 'onion', nameHi: 'प्याज', nameEn: 'Onion', icon: '🧅', season: 'horticulture' },
-  { id: 'potato', nameHi: 'आलू', nameEn: 'Potato', icon: '🥔', season: 'horticulture' },
-  { id: 'chili', nameHi: 'मिर्च', nameEn: 'Chili', icon: '🌶️', season: 'horticulture' },
-  { id: 'brinjal', nameHi: 'बैंगन', nameEn: 'Brinjal', icon: '🍆', season: 'horticulture' },
-  { id: 'okra', nameHi: 'भिंडी', nameEn: 'Okra', icon: '🥒', season: 'horticulture' },
-  { id: 'citrus', nameHi: 'नींबू वर्ग', nameEn: 'Citrus', icon: '🍊', season: 'horticulture' },
-  { id: 'guava', nameHi: 'अमरूद', nameEn: 'Guava', icon: '🍐', season: 'horticulture' },
-  { id: 'papaya', nameHi: 'पपीता', nameEn: 'Papaya', icon: '🥭', season: 'horticulture' },
+  { id: 'tomato', nameHi: 'टमाटर', nameEn: 'Tomato', icon: '🍅', season: 'horticulture', popDocument: '/pop/tomato.docx' },
+  { id: 'onion', nameHi: 'प्याज', nameEn: 'Onion', icon: '🧅', season: 'horticulture', popDocument: '/pop/onion.docx' },
+  { id: 'potato', nameHi: 'आलू', nameEn: 'Potato', icon: '🥔', season: 'horticulture', popDocument: '/pop/potato.docx' },
+  { id: 'chili', nameHi: 'मिर्च', nameEn: 'Chili', icon: '🌶️', season: 'horticulture', popDocument: '/pop/chilli.docx' },
+  { id: 'brinjal', nameHi: 'बैंगन', nameEn: 'Brinjal', icon: '🍆', season: 'horticulture', popDocument: '/pop/brinjal.docx' },
+  { id: 'okra', nameHi: 'भिंडी', nameEn: 'Okra', icon: '🥒', season: 'horticulture', popDocument: '/pop/okra.docx' },
+  { id: 'citrus', nameHi: 'नींबू वर्ग', nameEn: 'Citrus', icon: '🍊', season: 'horticulture', popDocument: '/pop/citrus.docx' },
+  { id: 'guava', nameHi: 'अमरूद', nameEn: 'Guava', icon: '🍐', season: 'horticulture', popDocument: '/pop/guava.docx' },
+  { id: 'papaya', nameHi: 'पपीता', nameEn: 'Papaya', icon: '🥭', season: 'horticulture', popDocument: '/pop/papaya.docx' },
   { id: 'banana', nameHi: 'केला', nameEn: 'Banana', icon: '🍌', season: 'horticulture' },
 ];
 
