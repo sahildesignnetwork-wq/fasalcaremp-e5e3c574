@@ -3,15 +3,15 @@ import { Crop } from '@/types';
 export const crops: Crop[] = [
   // Kharif Crops
   { id: 'soybean', nameHi: 'सोयाबीन', nameEn: 'Soybean', icon: '🫘', season: 'kharif' },
-  { id: 'rice', nameHi: 'धान', nameEn: 'Rice (Paddy)', icon: '🌾', season: 'kharif' },
-  { id: 'maize', nameHi: 'मक्का', nameEn: 'Maize', icon: '🌽', season: 'kharif' },
-  { id: 'cotton', nameHi: 'कपास', nameEn: 'Cotton', icon: '🧶', season: 'kharif' },
-  { id: 'pigeon_pea', nameHi: 'अरहर', nameEn: 'Pigeon Pea (Arhar)', icon: '🫛', season: 'kharif' },
-  { id: 'black_gram', nameHi: 'उड़द', nameEn: 'Black Gram (Urad)', icon: '⚫', season: 'kharif' },
-  { id: 'green_gram', nameHi: 'मूंग', nameEn: 'Green Gram (Moong)', icon: '🟢', season: 'kharif' },
-  { id: 'groundnut', nameHi: 'मूंगफली', nameEn: 'Groundnut', icon: '🥜', season: 'kharif' },
-  { id: 'sesame', nameHi: 'तिल', nameEn: 'Sesame (Til)', icon: '🌰', season: 'kharif' },
-  { id: 'sorghum', nameHi: 'ज्वार', nameEn: 'Sorghum (Jowar)', icon: '🌿', season: 'kharif' },
+  { id: 'rice', nameHi: 'धान', nameEn: 'Rice (Paddy)', icon: '🌾', season: 'kharif', popDocument: '/pop/paddy.docx' },
+  { id: 'maize', nameHi: 'मक्का', nameEn: 'Maize', icon: '🌽', season: 'kharif', popDocument: '/pop/maize.docx' },
+  { id: 'cotton', nameHi: 'कपास', nameEn: 'Cotton', icon: '🧶', season: 'kharif', popDocument: '/pop/cotton.docx' },
+  { id: 'pigeon_pea', nameHi: 'अरहर', nameEn: 'Pigeon Pea (Arhar)', icon: '🫛', season: 'kharif', popDocument: '/pop/pigeonpea.docx' },
+  { id: 'black_gram', nameHi: 'उड़द', nameEn: 'Black Gram (Urad)', icon: '⚫', season: 'kharif', popDocument: '/pop/blackgram.docx' },
+  { id: 'green_gram', nameHi: 'मूंग', nameEn: 'Green Gram (Moong)', icon: '🟢', season: 'kharif', popDocument: '/pop/moong.docx' },
+  { id: 'groundnut', nameHi: 'मूंगफली', nameEn: 'Groundnut', icon: '🥜', season: 'kharif', popDocument: '/pop/groundnut.docx' },
+  { id: 'sesame', nameHi: 'तिल', nameEn: 'Sesame (Til)', icon: '🌰', season: 'kharif', popDocument: '/pop/sesame.docx' },
+  { id: 'sorghum', nameHi: 'ज्वार', nameEn: 'Sorghum (Jowar)', icon: '🌿', season: 'kharif', popDocument: '/pop/sorghum.docx' },
 
   // Rabi Crops
   { id: 'wheat', nameHi: 'गेहूं', nameEn: 'Wheat', icon: '🌾', season: 'rabi' },

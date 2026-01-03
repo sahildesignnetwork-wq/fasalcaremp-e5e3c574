@@ -8,6 +8,7 @@ export interface Crop {
   nameEn: string;
   icon: string;
   season: CropSeason;
+  popDocument?: string; // Path to Package of Practices document
 }
 
 export type Severity = 'low' | 'medium' | 'high';
