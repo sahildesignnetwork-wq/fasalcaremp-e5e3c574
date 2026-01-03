@@ -14,14 +14,14 @@ export const crops: Crop[] = [
   { id: 'sorghum', nameHi: 'ज्वार', nameEn: 'Sorghum (Jowar)', icon: '🌿', season: 'kharif', popDocument: '/pop/sorghum.docx' },
 
   // Rabi Crops
-  { id: 'wheat', nameHi: 'गेहूं', nameEn: 'Wheat', icon: '🌾', season: 'rabi' },
-  { id: 'gram', nameHi: 'चना', nameEn: 'Gram (Chickpea)', icon: '🟤', season: 'rabi' },
-  { id: 'mustard', nameHi: 'सरसों', nameEn: 'Mustard', icon: '🌼', season: 'rabi' },
-  { id: 'lentil', nameHi: 'मसूर', nameEn: 'Lentil', icon: '🟠', season: 'rabi' },
-  { id: 'pea', nameHi: 'मटर', nameEn: 'Pea', icon: '🟩', season: 'rabi' },
-  { id: 'barley', nameHi: 'जौ', nameEn: 'Barley', icon: '🌾', season: 'rabi' },
-  { id: 'linseed', nameHi: 'अलसी', nameEn: 'Linseed (Alsi)', icon: '🌱', season: 'rabi' },
-  { id: 'oat', nameHi: 'जई', nameEn: 'Oat', icon: '🥣', season: 'rabi' },
+  { id: 'wheat', nameHi: 'गेहूं', nameEn: 'Wheat', icon: '🌾', season: 'rabi', popDocument: '/pop/wheat.docx' },
+  { id: 'gram', nameHi: 'चना', nameEn: 'Gram (Chickpea)', icon: '🟤', season: 'rabi', popDocument: '/pop/gram.docx' },
+  { id: 'mustard', nameHi: 'सरसों', nameEn: 'Mustard', icon: '🌼', season: 'rabi', popDocument: '/pop/mustard.docx' },
+  { id: 'lentil', nameHi: 'मसूर', nameEn: 'Lentil', icon: '🟠', season: 'rabi', popDocument: '/pop/lentil.docx' },
+  { id: 'pea', nameHi: 'मटर', nameEn: 'Pea', icon: '🟩', season: 'rabi', popDocument: '/pop/pea.docx' },
+  { id: 'barley', nameHi: 'जौ', nameEn: 'Barley', icon: '🌾', season: 'rabi', popDocument: '/pop/barley.docx' },
+  { id: 'linseed', nameHi: 'अलसी', nameEn: 'Linseed (Alsi)', icon: '🌱', season: 'rabi', popDocument: '/pop/linseed.docx' },
+  { id: 'oat', nameHi: 'जई', nameEn: 'Oat', icon: '🥣', season: 'rabi', popDocument: '/pop/oat.docx' },
 
   // Horticulture Crops
   { id: 'tomato', nameHi: 'टमाटर', nameEn: 'Tomato', icon: '🍅', season: 'horticulture' },
