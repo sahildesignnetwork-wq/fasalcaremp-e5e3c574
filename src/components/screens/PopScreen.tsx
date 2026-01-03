@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { crops, seasonLabels, getCropsBySeason } from '@/data/crops';
-import { ArrowLeft, BookOpen, ChevronRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Download, FileText } from 'lucide-react';
 import { Crop, CropSeason } from '@/types';
 
 const PopScreen: React.FC = () => {
@@ -12,8 +12,10 @@ const PopScreen: React.FC = () => {
   const seasons: CropSeason[] = ['kharif', 'rabi', 'horticulture'];
 
   const handleCropSelect = (crop: Crop) => {
-    // In a real app, this would navigate to crop-specific PoP detail
-    console.log('Selected crop for PoP:', crop.id);
+    if (crop.popDocument) {
+      // Open the document in a new tab for download
+      window.open(crop.popDocument, '_blank');
+    }
   };
 
   return (
@@ -70,7 +72,12 @@ const PopScreen: React.FC = () => {
             <button
               key={crop.id}
               onClick={() => handleCropSelect(crop)}
-              className="bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-4 hover:border-accent hover:shadow-lg transition-all active:scale-[0.98] animate-fade-in-up"
+              disabled={!crop.popDocument}
+              className={`bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-4 transition-all animate-fade-in-up ${
+                crop.popDocument 
+                  ? 'hover:border-accent hover:shadow-lg active:scale-[0.98]' 
+                  : 'opacity-60 cursor-not-allowed'
+              }`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center text-3xl">
@@ -80,11 +87,22 @@ const PopScreen: React.FC = () => {
                 <p className="font-semibold text-foreground text-lg">
                   {language === 'hi' ? crop.nameHi : crop.nameEn}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('खेती मार्गदर्शिका देखें', 'View farming guide')}
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  {crop.popDocument ? (
+                    <>
+                      <FileText className="w-3 h-3" />
+                      {t('डॉक्यूमेंट डाउनलोड करें', 'Download document')}
+                    </>
+                  ) : (
+                    t('जल्द आ रहा है', 'Coming soon')
+                  )}
                 </p>
               </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              {crop.popDocument ? (
+                <Download className="w-5 h-5 text-accent" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              )}
             </button>
           ))}
         </div>
