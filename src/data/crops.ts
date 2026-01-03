@@ -22,8 +22,6 @@ export const crops: Crop[] = [
   { id: 'barley', nameHi: 'जौ', nameEn: 'Barley', icon: '🌾', season: 'rabi' },
   { id: 'linseed', nameHi: 'अलसी', nameEn: 'Linseed (Alsi)', icon: '🌱', season: 'rabi' },
   { id: 'oat', nameHi: 'जई', nameEn: 'Oat', icon: '🥣', season: 'rabi' },
-  { id: 'garlic', nameHi: 'लहसुन', nameEn: 'Garlic', icon: '🧄', season: 'rabi' },
-  { id: 'onion_rabi', nameHi: 'प्याज', nameEn: 'Onion', icon: '🧅', season: 'rabi' },
 
   // Horticulture Crops
   { id: 'tomato', nameHi: 'टमाटर', nameEn: 'Tomato', icon: '🍅', season: 'horticulture' },
