@@ -2,21 +2,40 @@ import React, { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { crops, seasonLabels, getCropsBySeason } from '@/data/crops';
-import { ArrowLeft, BookOpen, ChevronRight, Download, FileText } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Download, FileText, Eye } from 'lucide-react';
 import { Crop, CropSeason } from '@/types';
+import DocumentViewer from '@/components/DocumentViewer';
 
 const PopScreen: React.FC = () => {
   const { t, setCurrentScreen, language } = useApp();
   const [selectedSeason, setSelectedSeason] = useState<CropSeason>('kharif');
+  const [viewingDocument, setViewingDocument] = useState<{url: string, name: string} | null>(null);
 
   const seasons: CropSeason[] = ['kharif', 'rabi', 'horticulture'];
 
   const handleCropSelect = (crop: Crop) => {
     if (crop.popDocument) {
-      // Open the document in a new tab for download
+      const cropName = language === 'hi' ? crop.nameHi : crop.nameEn;
+      setViewingDocument({ url: crop.popDocument, name: cropName });
+    }
+  };
+
+  const handleDownload = (e: React.MouseEvent, crop: Crop) => {
+    e.stopPropagation();
+    if (crop.popDocument) {
       window.open(crop.popDocument, '_blank');
     }
   };
+
+  if (viewingDocument) {
+    return (
+      <DocumentViewer
+        documentUrl={viewingDocument.url}
+        documentName={viewingDocument.name}
+        onClose={() => setViewingDocument(null)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -90,8 +109,8 @@ const PopScreen: React.FC = () => {
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   {crop.popDocument ? (
                     <>
-                      <FileText className="w-3 h-3" />
-                      {t('डॉक्यूमेंट डाउनलोड करें', 'Download document')}
+                      <Eye className="w-3 h-3" />
+                      {t('देखें या डाउनलोड करें', 'View or Download')}
                     </>
                   ) : (
                     t('जल्द आ रहा है', 'Coming soon')
@@ -99,7 +118,14 @@ const PopScreen: React.FC = () => {
                 </p>
               </div>
               {crop.popDocument ? (
-                <Download className="w-5 h-5 text-accent" />
+                <div className="flex gap-2">
+                  <div 
+                    className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center"
+                    onClick={(e) => handleDownload(e, crop)}
+                  >
+                    <Download className="w-5 h-5 text-accent" />
+                  </div>
+                </div>
               ) : (
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               )}
