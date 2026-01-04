@@ -81,12 +81,12 @@ const HomeScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Disclaimer */}
-          <div className="bg-accent/10 rounded-2xl p-4 border border-accent/30">
-            <p className="text-sm text-muted-foreground text-center">
+          {/* Sliding Disclaimer */}
+          <div className="bg-warning/10 rounded-2xl p-3 border border-warning/30 overflow-hidden">
+            <p className="text-sm text-warning animate-marquee whitespace-nowrap">
               {t(
-                '⚠️ यह ऐप केवल सलाह हेतु है, अंतिम निर्णय कृषि विशेषज्ञ से परामर्श के बाद लें।',
-                '⚠️ This app is for advisory purposes only. Please consult agricultural experts for final decisions.'
+                '⚠️ अस्वीकरण: यह ऐप केवल सलाह हेतु है। कृपया अंतिम निर्णय के लिए कृषि विशेषज्ञ से परामर्श करें। ⚠️',
+                '⚠️ Disclaimer: This app is for advisory purposes only. Please consult agricultural experts for final decisions. ⚠️'
               )}
             </p>
           </div>
