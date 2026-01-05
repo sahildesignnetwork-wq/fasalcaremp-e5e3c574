@@ -16,7 +16,7 @@ const HomeScreen: React.FC = () => {
               <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-primary-foreground">Fasal Doctor</h1>
+              <h1 className="text-xl font-bold text-primary-foreground">Krishi Sarthi</h1>
               <p className="text-xs text-primary-foreground/80">Department of Agriculture, IEHE Bhopal</p>
             </div>
           </div>
