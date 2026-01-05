@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Leaf, Sprout } from 'lucide-react';
-
+import ieheLogo from '@/assets/iehe-logo.png';
 const SplashScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
   const [showCredit, setShowCredit] = useState(false);
@@ -38,11 +37,8 @@ const SplashScreen: React.FC = () => {
       <div className="animate-fade-in-scale flex flex-col items-center">
         {/* App Icon */}
         <div className="relative mb-6">
-          <div className="w-32 h-32 bg-primary-foreground/20 rounded-3xl flex items-center justify-center backdrop-blur-sm shadow-glow">
-            <Leaf className="w-20 h-20 text-primary-foreground animate-bounce-gentle" />
-          </div>
-          <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-accent rounded-full flex items-center justify-center shadow-lg">
-            <Sprout className="w-7 h-7 text-accent-foreground" />
+          <div className="w-32 h-32 rounded-3xl flex items-center justify-center backdrop-blur-sm shadow-glow overflow-hidden">
+            <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
           </div>
         </div>
 

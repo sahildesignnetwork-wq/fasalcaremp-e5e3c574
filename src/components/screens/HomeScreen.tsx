@@ -1,8 +1,8 @@
 import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { Camera, BookOpen, Leaf, Settings, Info } from 'lucide-react';
-
+import { Camera, BookOpen, Settings, Info, Home } from 'lucide-react';
+import ieheLogo from '@/assets/iehe-logo.png';
 const HomeScreen: React.FC = () => {
   const { t, setCurrentScreen } = useApp();
 
@@ -12,12 +12,12 @@ const HomeScreen: React.FC = () => {
       <header className="bg-gradient-primary p-4 pt-6 pb-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center">
-              <Leaf className="w-7 h-7 text-primary-foreground" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
+              <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-primary-foreground">Fasal Doctor</h1>
-              <p className="text-xs text-primary-foreground/80">IEHE BHOPAL</p>
+              <p className="text-xs text-primary-foreground/80">Department of Agriculture, IEHE Bhopal</p>
             </div>
           </div>
           <button className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
@@ -97,7 +97,7 @@ const HomeScreen: React.FC = () => {
       <nav className="bg-card border-t border-border p-2 pb-4">
         <div className="flex justify-around">
           <Button variant="navActive" size="sm" className="flex-1 max-w-[80px]">
-            <Leaf className="w-5 h-5" />
+            <Home className="w-5 h-5" />
             <span className="text-xs">{t('होम', 'Home')}</span>
           </Button>
           <Button 

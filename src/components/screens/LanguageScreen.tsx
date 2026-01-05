@@ -1,8 +1,8 @@
 import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { Languages, Leaf, Bot, Users } from 'lucide-react';
-
+import { Languages, Bot, Users } from 'lucide-react';
+import ieheLogo from '@/assets/iehe-logo.png';
 const LanguageScreen: React.FC = () => {
   const { setLanguage, setCurrentScreen } = useApp();
 
@@ -15,13 +15,13 @@ const LanguageScreen: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 pb-20">
       {/* Header */}
       <div className="animate-fade-in-up flex flex-col items-center mb-4">
-        <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mb-2 shadow-lg">
-          <Leaf className="w-8 h-8 text-primary-foreground" />
+        <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-2 shadow-lg overflow-hidden">
+          <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-2xl font-bold text-foreground mb-0.5">Fasal Doctor</h1>
         <p className="text-muted-foreground text-sm mb-1">फसल डॉक्टर</p>
         <div className="bg-accent/20 px-3 py-1 rounded-full">
-          <p className="text-xs font-semibold text-accent">IEHE BHOPAL</p>
+          <p className="text-xs font-semibold text-accent">Department of Agriculture, IEHE Bhopal</p>
         </div>
       </div>
 
