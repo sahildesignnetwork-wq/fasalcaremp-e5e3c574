@@ -12,80 +12,80 @@ const LanguageScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 pb-20">
       {/* Header */}
-      <div className="animate-fade-in-up flex flex-col items-center mb-8">
-        <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-          <Leaf className="w-12 h-12 text-primary-foreground" />
+      <div className="animate-fade-in-up flex flex-col items-center mb-4">
+        <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mb-2 shadow-lg">
+          <Leaf className="w-8 h-8 text-primary-foreground" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-1">Fasal Doctor</h1>
-        <p className="text-muted-foreground mb-2">फसल डॉक्टर</p>
-        <div className="bg-accent/20 px-4 py-1.5 rounded-full">
-          <p className="text-sm font-semibold text-accent">IEHE BHOPAL</p>
+        <h1 className="text-2xl font-bold text-foreground mb-0.5">Fasal Doctor</h1>
+        <p className="text-muted-foreground text-sm mb-1">फसल डॉक्टर</p>
+        <div className="bg-accent/20 px-3 py-1 rounded-full">
+          <p className="text-xs font-semibold text-accent">IEHE BHOPAL</p>
         </div>
       </div>
 
       {/* Language Selection */}
       <div className="w-full max-w-sm animate-fade-in-up delay-200">
-        <div className="flex items-center gap-2 mb-6 justify-center">
-          <Languages className="w-5 h-5 text-muted-foreground" />
-          <p className="text-muted-foreground text-center">
+        <div className="flex items-center gap-2 mb-3 justify-center">
+          <Languages className="w-4 h-4 text-muted-foreground" />
+          <p className="text-muted-foreground text-center text-sm">
             अपनी भाषा चुनें / Choose your language
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {/* Hindi Option */}
           <Button
             variant="outline"
-            size="xl"
+            size="lg"
             onClick={() => handleLanguageSelect('hi')}
-            className="w-full justify-start gap-4 h-20 text-left hover:border-primary hover:bg-primary/5"
+            className="w-full justify-start gap-3 h-14 text-left hover:border-primary hover:bg-primary/5"
           >
-            <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center text-2xl">
+            <div className="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center text-xl">
               अ
             </div>
             <div>
-              <p className="text-xl font-semibold">हिंदी</p>
-              <p className="text-sm text-muted-foreground">Hindi (Recommended)</p>
+              <p className="text-lg font-semibold">हिंदी</p>
+              <p className="text-xs text-muted-foreground">Hindi (Recommended)</p>
             </div>
           </Button>
 
           {/* English Option */}
           <Button
             variant="outline"
-            size="xl"
+            size="lg"
             onClick={() => handleLanguageSelect('en')}
-            className="w-full justify-start gap-4 h-20 text-left hover:border-primary hover:bg-primary/5"
+            className="w-full justify-start gap-3 h-14 text-left hover:border-primary hover:bg-primary/5"
           >
-            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl font-semibold text-primary">
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-xl font-semibold text-primary">
               A
             </div>
             <div>
-              <p className="text-xl font-semibold">English</p>
-              <p className="text-sm text-muted-foreground">अंग्रेज़ी</p>
+              <p className="text-lg font-semibold">English</p>
+              <p className="text-xs text-muted-foreground">अंग्रेज़ी</p>
             </div>
           </Button>
         </div>
       </div>
 
       {/* AI Acknowledgement */}
-      <div className="w-full max-w-sm mt-8 animate-fade-in-up delay-300">
-        <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
-          <div className="flex items-center gap-2 mb-2">
-            <Bot className="w-5 h-5 text-primary" />
-            <p className="font-semibold text-foreground text-sm">Powered by AI</p>
+      <div className="w-full max-w-sm mt-4 animate-fade-in-up delay-300">
+        <div className="bg-primary/5 rounded-lg p-2.5 border border-primary/20">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Bot className="w-4 h-4 text-primary" />
+            <p className="font-semibold text-foreground text-xs">Powered by AI</p>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] text-muted-foreground leading-tight">
             This app uses advanced AI (Gemini) for crop disease detection. Results are for advisory purposes only.
           </p>
         </div>
       </div>
 
       {/* Sliding Disclaimer */}
-      <div className="w-full max-w-sm mt-4 overflow-hidden">
-        <div className="bg-warning/10 rounded-lg py-2 px-1">
-          <p className="text-xs text-warning animate-marquee whitespace-nowrap">
+      <div className="w-full max-w-sm mt-3 overflow-hidden">
+        <div className="bg-warning/10 rounded-lg py-1.5 px-1">
+          <p className="text-[10px] text-warning animate-marquee whitespace-nowrap">
             ⚠️ अस्वीकरण: यह ऐप केवल सलाह हेतु है। कृपया अंतिम निर्णय के लिए कृषि विशेषज्ञ से परामर्श करें। 
             | Disclaimer: This app is for advisory purposes only. Please consult agricultural experts for final decisions. ⚠️
           </p>
@@ -93,14 +93,14 @@ const LanguageScreen: React.FC = () => {
       </div>
 
       {/* Credits */}
-      <div className="absolute bottom-6 left-0 right-0 px-6">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Users className="w-4 h-4 text-muted-foreground" />
-          <p className="text-xs text-muted-foreground text-center">
+      <div className="absolute bottom-4 left-0 right-0 px-4">
+        <div className="flex items-center justify-center gap-1.5 mb-1">
+          <Users className="w-3 h-3 text-muted-foreground" />
+          <p className="text-[10px] text-muted-foreground text-center">
             Made by Sahil Raghuwanshi, Aniket Tiwari and other students of B.Sc Agriculture
           </p>
         </div>
-        <p className="text-xs text-muted-foreground text-center opacity-70">
+        <p className="text-[10px] text-muted-foreground text-center opacity-70">
           आप बाद में भी भाषा बदल सकते हैं | You can change language later
         </p>
       </div>
