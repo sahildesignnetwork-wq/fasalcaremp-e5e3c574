@@ -65,10 +65,10 @@ const SplashScreen: React.FC = () => {
         <div className="absolute bottom-20 animate-credit-fade">
           <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-primary-foreground/20">
             <p className="text-sm text-primary-foreground/90 text-center">
-              Made by students of
+              Developed by
             </p>
             <p className="text-base font-semibold text-primary-foreground text-center">
-              B.Sc. Agriculture
+              Department of Agriculture
             </p>
           </div>
         </div>
