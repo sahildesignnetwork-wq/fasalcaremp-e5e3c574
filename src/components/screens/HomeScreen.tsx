@@ -12,7 +12,7 @@ const HomeScreen: React.FC = () => {
       <header className="bg-gradient-primary p-4 pt-6 pb-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border-2 border-primary-foreground/30 ring-2 ring-primary-foreground/10">
               <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
             </div>
             <div>
