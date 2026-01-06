@@ -15,7 +15,7 @@ const LanguageScreen: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 pb-20">
       {/* Header */}
       <div className="animate-fade-in-up flex flex-col items-center mb-4">
-        <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-2 shadow-lg overflow-hidden">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2 shadow-lg overflow-hidden border-3 border-primary/30 ring-4 ring-primary/10">
           <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-2xl font-bold text-foreground mb-0.5">Krishi Sarthi</h1>

@@ -37,7 +37,7 @@ const SplashScreen: React.FC = () => {
       <div className="animate-fade-in-scale flex flex-col items-center">
         {/* App Icon */}
         <div className="relative mb-6">
-          <div className="w-32 h-32 rounded-3xl flex items-center justify-center backdrop-blur-sm shadow-glow overflow-hidden">
+          <div className="w-32 h-32 rounded-full flex items-center justify-center backdrop-blur-sm shadow-glow overflow-hidden border-4 border-primary-foreground/30 ring-4 ring-primary-foreground/10">
             <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
           </div>
         </div>
