@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import ieheLogo from '@/assets/iehe-logo.png';
+import ieheLogo from '@/assets/iehe-logo.jpg';
 const SplashScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
   const [showCredit, setShowCredit] = useState(false);
