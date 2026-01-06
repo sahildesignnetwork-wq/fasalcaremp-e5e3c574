@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Camera, BookOpen, Settings, Info, Home } from 'lucide-react';
-import ieheLogo from '@/assets/iehe-logo.png';
+import ieheLogo from '@/assets/iehe-logo.jpg';
 const HomeScreen: React.FC = () => {
   const { t, setCurrentScreen } = useApp();
 

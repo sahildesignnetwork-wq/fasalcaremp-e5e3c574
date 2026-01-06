@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Languages, Bot, Users } from 'lucide-react';
-import ieheLogo from '@/assets/iehe-logo.png';
+import ieheLogo from '@/assets/iehe-logo.jpg';
 const LanguageScreen: React.FC = () => {
   const { setLanguage, setCurrentScreen } = useApp();
 
