@@ -18,8 +18,8 @@ const LanguageScreen: React.FC = () => {
         <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2 shadow-lg overflow-hidden border-3 border-primary/30 ring-4 ring-primary/10">
           <img src={ieheLogo} alt="IEHE Bhopal Logo" className="w-full h-full object-cover" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-0.5">Krishi Sarthi</h1>
-        <p className="text-muted-foreground text-sm mb-1">कृषि सारथी</p>
+        <h1 className="text-2xl font-bold text-foreground mb-0.5">Fasal Care</h1>
+        <p className="text-muted-foreground text-sm mb-1">फसल केयर</p>
         <div className="bg-accent/20 px-3 py-1 rounded-full">
           <p className="text-xs font-semibold text-accent">Department of Agriculture, IEHE Bhopal</p>
         </div>

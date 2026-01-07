@@ -44,10 +44,10 @@ const SplashScreen: React.FC = () => {
 
         {/* App Name */}
         <h1 className="text-4xl font-bold text-primary-foreground mb-2 tracking-wide">
-          Krishi Sarthi
+          Fasal Care
         </h1>
         <p className="text-lg text-primary-foreground/90 mb-1">
-          कृषि सारथी
+          फसल केयर
         </p>
         
         {/* IEHE Bhopal Subtitle */}
