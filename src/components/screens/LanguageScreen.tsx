@@ -97,7 +97,7 @@ const LanguageScreen: React.FC = () => {
         <div className="flex items-center justify-center gap-1.5 mb-1">
           <Users className="w-3 h-3 text-muted-foreground" />
           <p className="text-[10px] text-muted-foreground text-center">
-            Developed by Sahil Raghuwanshi, Aniket Tiwari (B.Sc. Ag 2nd year, IEHE Bhopal) and students
+            Developed by Technology & Innovation Wing (Sahil Raghuwanshi) | Consultancy Core Team Lead - Aniket Tiwari | Dept. of Agriculture, IEHE Bhopal
           </p>
         </div>
         <p className="text-[10px] text-muted-foreground text-center opacity-70">
