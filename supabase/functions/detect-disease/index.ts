@@ -9,6 +9,54 @@ const corsHeaders = {
 // Maximum image size: 10MB in base64 (approximately 7.5MB actual file)
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
+// Simple in-memory rate limiting (resets on function cold start)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute per IP
+
+function getClientIP(req: Request): string {
+  // Try various headers that might contain the client IP
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  const realIP = req.headers.get('x-real-ip');
+  if (realIP) {
+    return realIP;
+  }
+  // Fallback to a generic identifier
+  return 'unknown';
+}
+
+function checkRateLimit(clientIP: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const record = rateLimitMap.get(clientIP);
+  
+  if (!record || now > record.resetTime) {
+    // Start new window
+    rateLimitMap.set(clientIP, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    const retryAfter = Math.ceil((record.resetTime - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+  
+  record.count++;
+  return { allowed: true };
+}
+
+// Clean up old entries periodically (simple garbage collection)
+function cleanupRateLimitMap() {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitMap.entries()) {
+    if (now > record.resetTime) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}
+
 const systemPrompt = `You are an expert agricultural pathologist specialized in crop diseases for Madhya Pradesh, India. You analyze images of crop leaves to detect diseases.
 
 IMPORTANT GUIDELINES:
@@ -49,10 +97,37 @@ If disease is NOT detected, respond with:
   "message": "Unable to detect disease. Please ensure the image shows a clear view of the affected leaf."
 }`;
 
+// Generic error messages to prevent information leakage
+const GENERIC_ERROR = 'Service temporarily unavailable. Please try again later.';
+const ANALYSIS_ERROR = 'Unable to analyze image. Please try again.';
+const RATE_LIMIT_ERROR = 'Too many requests. Please wait before trying again.';
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Periodic cleanup of rate limit map
+  cleanupRateLimitMap();
+
+  // Check rate limit
+  const clientIP = getClientIP(req);
+  const rateLimitResult = checkRateLimit(clientIP);
+  
+  if (!rateLimitResult.allowed) {
+    console.error(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ error: RATE_LIMIT_ERROR }),
+      { 
+        status: 429, 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': String(rateLimitResult.retryAfter || 60)
+        } 
+      }
+    );
   }
 
   try {
@@ -112,12 +187,12 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       console.error('LOVABLE_API_KEY is not configured');
       return new Response(
-        JSON.stringify({ error: 'AI service not configured' }),
+        JSON.stringify({ error: GENERIC_ERROR }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Analyzing image for crop: ${cropName} (${cropNameHi})`);
+    console.log(`Analyzing image for crop: ${cropName}`);
 
     const userPrompt = `Analyze this image of a ${cropName} (${cropNameHi}) crop leaf for any diseases, pest damage, or nutrient deficiencies. 
 This is from a farm in Madhya Pradesh, India. Provide your analysis in the specified JSON format.
@@ -150,24 +225,23 @@ If you detect a disease, include comprehensive treatment advice following ICAR g
 
     if (!response.ok) {
       if (response.status === 429) {
-        console.error('Rate limit exceeded');
+        console.error('AI API rate limit exceeded');
         return new Response(
           JSON.stringify({ error: 'Service is busy. Please try again in a moment.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       if (response.status === 402) {
-        console.error('Payment required');
+        console.error('AI API payment required');
         return new Response(
-          JSON.stringify({ error: 'AI service credits exhausted. Please try again later.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: GENERIC_ERROR }),
+          { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
-      const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
+      console.error('AI API error:', response.status);
       return new Response(
-        JSON.stringify({ error: 'AI analysis failed. Please try again.' }),
+        JSON.stringify({ error: ANALYSIS_ERROR }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -178,12 +252,12 @@ If you detect a disease, include comprehensive treatment advice following ICAR g
     if (!content) {
       console.error('No content in AI response');
       return new Response(
-        JSON.stringify({ detected: false, message: 'Unable to analyze image. Please try again.' }),
+        JSON.stringify({ detected: false, message: ANALYSIS_ERROR }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('AI Response received:', content.substring(0, 200));
+    console.log('AI analysis completed successfully');
 
     // Parse the JSON response from AI
     let analysisResult;
@@ -196,7 +270,7 @@ If you detect a disease, include comprehensive treatment advice following ICAR g
       }
       analysisResult = JSON.parse(jsonStr);
     } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', parseError);
+      console.error('Failed to parse AI response as JSON');
       // Return a fallback response
       return new Response(
         JSON.stringify({ 
@@ -215,10 +289,9 @@ If you detect a disease, include comprehensive treatment advice following ICAR g
     );
 
   } catch (error: unknown) {
-    console.error('Error in detect-disease function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Error in detect-disease function');
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: GENERIC_ERROR }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
