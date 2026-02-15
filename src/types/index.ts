@@ -62,4 +62,21 @@ export type AppScreen =
   | 'advisory' 
   | 'feedback'
   | 'pop'
-  | 'popDetail';
+  | 'popDetail'
+  | 'login'
+  | 'news'
+  | 'newsDetail'
+  | 'adminNews';
+
+export interface AgriNews {
+  id: string;
+  title: string;
+  summary: string | null;
+  content: string;
+  image_url: string | null;
+  source: string | null;
+  category: string | null;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
