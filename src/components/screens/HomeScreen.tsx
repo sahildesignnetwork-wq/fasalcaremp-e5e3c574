@@ -1,10 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Camera, BookOpen, Settings, Info, Home } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar } from 'lucide-react';
 import ieheLogo from '@/assets/iehe-logo.jpg';
+import { AgriNews } from '@/types';
+
 const HomeScreen: React.FC = () => {
   const { t, setCurrentScreen } = useApp();
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [featuredNews, setFeaturedNews] = useState<AgriNews[]>([]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) checkAdmin(session.user.id);
+      else setIsAdmin(false);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) checkAdmin(session.user.id);
+    });
+    fetchFeaturedNews();
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkAdmin = async (userId: string) => {
+    const { data } = await supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin');
+    setIsAdmin(!!(data && data.length > 0));
+  };
+
+  const fetchFeaturedNews = async () => {
+    const { data } = await supabase.from('agri_news').select('*').order('published_at', { ascending: false }).limit(3);
+    if (data) setFeaturedNews(data as AgriNews[]);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setIsAdmin(false);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -20,9 +57,20 @@ const HomeScreen: React.FC = () => {
               <p className="text-xs text-primary-foreground/80">Department of Agriculture, IEHE Bhopal</p>
             </div>
           </div>
-          <button className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-            <Settings className="w-5 h-5 text-primary-foreground" />
-          </button>
+          <div className="flex items-center gap-1">
+            {user ? (
+              <button onClick={handleLogout} className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                <LogOut className="w-5 h-5 text-primary-foreground" />
+              </button>
+            ) : (
+              <button onClick={() => setCurrentScreen('login')} className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                <LogIn className="w-5 h-5 text-primary-foreground" />
+              </button>
+            )}
+            <button className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+              <Settings className="w-5 h-5 text-primary-foreground" />
+            </button>
+          </div>
         </div>
         
         <p className="text-primary-foreground/90 text-center">
@@ -64,6 +112,40 @@ const HomeScreen: React.FC = () => {
             </div>
           </Button>
         </div>
+
+        {/* Featured News */}
+        {featuredNews.length > 0 && (
+          <div className="mb-6 animate-fade-in-up delay-100">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Newspaper className="w-5 h-5 text-primary" />
+                {t('ताज़ा कृषि समाचार', 'Latest Agri News')}
+              </h3>
+              <button onClick={() => setCurrentScreen('news')} className="text-xs text-primary font-medium">
+                {t('सभी देखें', 'View All')} →
+              </button>
+            </div>
+            <div className="space-y-3">
+              {featuredNews.map(item => (
+                <button key={item.id} onClick={() => setCurrentScreen('news')} className="w-full text-left bg-card rounded-xl p-3 border border-border shadow-sm flex gap-3 items-start">
+                  {item.image_url && <img src={item.image_url} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium text-foreground line-clamp-2">{item.title}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      {item.category && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{item.category}</Badge>}
+                      {item.published_at && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <Calendar className="w-2.5 h-2.5" />
+                          {new Date(item.published_at).toLocaleDateString('hi-IN')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Info Cards */}
         <div className="space-y-4 animate-fade-in-up delay-200">
@@ -113,11 +195,31 @@ const HomeScreen: React.FC = () => {
             variant="nav" 
             size="sm" 
             className="flex-1 max-w-[80px]"
+            onClick={() => setCurrentScreen('news')}
+          >
+            <Newspaper className="w-5 h-5" />
+            <span className="text-xs">{t('समाचार', 'News')}</span>
+          </Button>
+          <Button 
+            variant="nav" 
+            size="sm" 
+            className="flex-1 max-w-[80px]"
             onClick={() => setCurrentScreen('pop')}
           >
             <BookOpen className="w-5 h-5" />
-            <span className="text-xs">{t('मार्गदर्शिका', 'Guide')}</span>
+            <span className="text-xs">{t('गाइड', 'Guide')}</span>
           </Button>
+          {isAdmin && (
+            <Button 
+              variant="nav" 
+              size="sm" 
+              className="flex-1 max-w-[80px]"
+              onClick={() => setCurrentScreen('adminNews')}
+            >
+              <Shield className="w-5 h-5" />
+              <span className="text-xs">Admin</span>
+            </Button>
+          )}
         </div>
       </nav>
     </div>
