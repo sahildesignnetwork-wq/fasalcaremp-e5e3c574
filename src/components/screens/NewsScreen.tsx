@@ -128,7 +128,18 @@ const NewsScreen: React.FC = () => {
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     {item.category && <Badge variant="secondary" className="text-xs">{item.category}</Badge>}
-                    {item.source && <span className="text-xs text-muted-foreground flex items-center gap-1"><ExternalLink className="w-3 h-3" />{item.source}</span>}
+                  {item.source && (
+                      <a
+                        href={item.source.startsWith('http') ? item.source : `https://${item.source}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary underline flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        {item.source.replace(/^https?:\/\//, '').split('/')[0]}
+                      </a>
+                    )}
                   </div>
                   <h3 className="font-semibold text-foreground line-clamp-2">{item.title}</h3>
                   {item.summary && <p className="text-sm text-muted-foreground line-clamp-2">{item.summary}</p>}
@@ -215,7 +226,17 @@ const NewsDetailView: React.FC<{ newsId: string; onBack: () => void }> = ({ news
       <main className="flex-1 p-4 space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           {article.category && <Badge>{article.category}</Badge>}
-          {article.source && <span className="text-xs text-muted-foreground flex items-center gap-1"><ExternalLink className="w-3 h-3" />{article.source}</span>}
+        {article.source && (
+            <a
+              href={article.source.startsWith('http') ? article.source : `https://${article.source}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary underline flex items-center gap-1"
+            >
+              <ExternalLink className="w-3 h-3" />
+              {article.source.replace(/^https?:\/\//, '').split('/')[0]}
+            </a>
+          )}
         </div>
         <h1 className="text-2xl font-bold text-foreground">{article.title}</h1>
         {article.published_at && (
