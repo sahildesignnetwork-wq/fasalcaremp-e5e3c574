@@ -2,3 +2,6 @@ project_id = "iuxzsnhhviieeflynyva"
 
 [functions.detect-disease]
 verify_jwt = false
+
+[functions.fetch-agri-news]
+verify_jwt = false
