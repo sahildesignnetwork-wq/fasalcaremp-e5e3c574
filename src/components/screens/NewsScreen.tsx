@@ -20,6 +20,12 @@ const CATEGORY_LABELS: Record<string, { hi: string; en: string }> = {
   'Pest Alert': { hi: 'कीट चेतावनी', en: 'Pest Alert' },
 };
 
+const getCategoryLabel = (cat: string, language: string) => {
+  const labels = CATEGORY_LABELS[cat];
+  if (!labels) return cat;
+  return language === 'hi' ? labels.hi : labels.en;
+};
+
 const NewsScreen: React.FC = () => {
   const { t, language, setCurrentScreen } = useApp();
   const [news, setNews] = useState<AgriNews[]>([]);
@@ -63,11 +69,7 @@ const NewsScreen: React.FC = () => {
   const getSummary = (item: AgriNews) =>
     language === 'hi' && item.summary_hi ? item.summary_hi : item.summary;
 
-  const getCategoryLabel = (cat: string) => {
-    const labels = CATEGORY_LABELS[cat];
-    if (!labels) return cat;
-    return language === 'hi' ? labels.hi : labels.en;
-  };
+
 
   const openDetail = (id: string) => {
     setSelectedNewsId(id);
@@ -115,7 +117,7 @@ const NewsScreen: React.FC = () => {
               onClick={() => { setCategory(cat); setPage(0); }}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${category === cat ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
             >
-              {getCategoryLabel(cat)}
+              {getCategoryLabel(cat, language)}
             </button>
           ))}
         </div>
@@ -150,7 +152,7 @@ const NewsScreen: React.FC = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     {item.category && (
                       <Badge variant="secondary" className="text-xs">
-                        {getCategoryLabel(item.category)}
+                        {getCategoryLabel(item.category, language)}
                       </Badge>
                     )}
                     {item.published_at && (
@@ -256,7 +258,7 @@ const NewsDetailView: React.FC<{ newsId: string; onBack: () => void }> = ({ news
       <main className="flex-1 p-4 space-y-4">
         {/* Category badge */}
         {article.category && (
-          <Badge>{article.category}</Badge>
+          <Badge>{getCategoryLabel(article.category, language)}</Badge>
         )}
 
         {/* Title */}

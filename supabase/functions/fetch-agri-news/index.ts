@@ -92,6 +92,7 @@ Return a JSON array with exactly 3 objects, each having:
 - "content": English detailed content (200-350 chars, factual and useful for farmers)
 - "content_hi": Hindi detailed content (200-350 chars, factual and useful for farmers)
 - "category": one of the categories listed above (EXACT match required)
+- "source_url": a plausible specific article URL on the relevant government website for this category. Use the base domains: Government Scheme->pmkisan.gov.in, Market Price->agmarknet.gov.in, Weather->mausam.imd.gov.in, Technology->icar.org.in, Organic Farming->mpkrishi.mp.gov.in, Pest Alert->ppqs.gov.in. Append a realistic article path like /news/article-slug-in-english. Example: "https://pmkisan.gov.in/news/pm-kisan-18th-installment-released-2026"
 
 Return ONLY the JSON array, no markdown, no extra text.`;
 
@@ -133,6 +134,8 @@ Return ONLY the JSON array, no markdown, no extra text.`;
       const images = CATEGORY_IMAGES[cat] || DEFAULT_IMAGES;
       const image_url = images[Math.floor(Math.random() * images.length)];
       const source = sourceMap[cat] || "https://agricoop.nic.in";
+      // Use AI-generated specific article URL if valid, otherwise fall back to base domain
+      const aiSourceUrl = typeof a.source_url === "string" && a.source_url.startsWith("http") ? a.source_url : source;
       return {
         title: a.title,
         title_hi: a.title_hi || null,
@@ -142,7 +145,7 @@ Return ONLY the JSON array, no markdown, no extra text.`;
         content_hi: a.content_hi || null,
         category: cat || null,
         source,
-        source_url: source,
+        source_url: aiSourceUrl,
         image_url,
         published_at: new Date(now.getTime() - i * 60000).toISOString(),
       };
