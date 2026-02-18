@@ -36,6 +36,15 @@ Deno.serve(async (req) => {
       "Pest Alert",
     ];
 
+    const sourceMap: Record<string, string> = {
+      "Government Scheme": "https://pmkisan.gov.in",
+      "Market Price": "https://agmarknet.gov.in",
+      "Weather": "https://mausam.imd.gov.in",
+      "Technology": "https://icar.org.in",
+      "Organic Farming": "https://mpkrishi.mp.gov.in",
+      "Pest Alert": "https://ppqs.gov.in",
+    };
+
     const prompt = `You are an Indian agriculture news generator. Generate 3 NEW and UNIQUE Hindi agriculture news articles relevant to Madhya Pradesh farmers. 
 
 DO NOT repeat these existing titles: ${existingTitles}
@@ -46,9 +55,8 @@ Return a JSON array with exactly 3 objects, each having:
 - "title": Hindi title (max 80 chars)
 - "summary": Hindi summary (max 150 chars)  
 - "content": Hindi detailed content (200-400 chars)
-- "category": one of the categories listed above
-- "source": a realistic Indian agriculture news source name like "Krishi Vibhag MP", "PIB India", "IMD Bhopal", "ICAR", "Kisan Helpline", "Agriculture Ministry"
-- "image_url": use an Unsplash image URL relevant to agriculture, format: https://images.unsplash.com/photo-{id}?w=600
+- "category": one of the categories listed above (EXACT match required)
+- "image_url": use a relevant Unsplash image URL, format: https://images.unsplash.com/photo-{valid-photo-id}?w=600 (use real IDs like 1500937386664-56d1dfef3854, 1574323347407-f5e1ad6d020b, 1464226184884-fa280b87c399)
 
 Return ONLY the JSON array, no markdown or extra text.`;
 
@@ -90,7 +98,7 @@ Return ONLY the JSON array, no markdown or extra text.`;
       summary: a.summary || null,
       content: a.content,
       category: a.category || null,
-      source: a.source || null,
+      source: sourceMap[a.category] || "https://agricoop.nic.in",
       image_url: a.image_url || null,
       published_at: new Date(now.getTime() - i * 60000).toISOString(),
     }));
