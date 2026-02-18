@@ -5,14 +5,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Search, Newspaper, Calendar, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Search, Newspaper, Calendar, ExternalLink, Globe } from 'lucide-react';
 import { AgriNews } from '@/types';
 
 const NEWS_PER_PAGE = 10;
 const CATEGORIES = ['Government Scheme', 'Market Price', 'Weather', 'Technology', 'Organic Farming', 'Pest Alert'];
 
+const CATEGORY_LABELS: Record<string, { hi: string; en: string }> = {
+  'Government Scheme': { hi: 'सरकारी योजना', en: 'Government Scheme' },
+  'Market Price': { hi: 'बाजार भाव', en: 'Market Price' },
+  'Weather': { hi: 'मौसम', en: 'Weather' },
+  'Technology': { hi: 'तकनीक', en: 'Technology' },
+  'Organic Farming': { hi: 'जैविक खेती', en: 'Organic Farming' },
+  'Pest Alert': { hi: 'कीट चेतावनी', en: 'Pest Alert' },
+};
+
 const NewsScreen: React.FC = () => {
-  const { t, setCurrentScreen } = useApp();
+  const { t, language, setCurrentScreen } = useApp();
   const [news, setNews] = useState<AgriNews[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -34,7 +43,7 @@ const NewsScreen: React.FC = () => {
       .range(page * NEWS_PER_PAGE, (page + 1) * NEWS_PER_PAGE - 1);
 
     if (search.trim()) {
-      query = query.ilike('title', `%${search.trim()}%`);
+      query = query.or(`title.ilike.%${search.trim()}%,title_hi.ilike.%${search.trim()}%`);
     }
     if (category) {
       query = query.eq('category', category);
@@ -46,6 +55,18 @@ const NewsScreen: React.FC = () => {
       setHasMore(data.length === NEWS_PER_PAGE);
     }
     setLoading(false);
+  };
+
+  const getTitle = (item: AgriNews) =>
+    language === 'hi' && item.title_hi ? item.title_hi : item.title;
+
+  const getSummary = (item: AgriNews) =>
+    language === 'hi' && item.summary_hi ? item.summary_hi : item.summary;
+
+  const getCategoryLabel = (cat: string) => {
+    const labels = CATEGORY_LABELS[cat];
+    if (!labels) return cat;
+    return language === 'hi' ? labels.hi : labels.en;
   };
 
   const openDetail = (id: string) => {
@@ -94,7 +115,7 @@ const NewsScreen: React.FC = () => {
               onClick={() => { setCategory(cat); setPage(0); }}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${category === cat ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
             >
-              {cat}
+              {getCategoryLabel(cat)}
             </button>
           ))}
         </div>
@@ -123,30 +144,31 @@ const NewsScreen: React.FC = () => {
             {news.map(item => (
               <button key={item.id} onClick={() => openDetail(item.id)} className="w-full text-left bg-card rounded-2xl overflow-hidden shadow-md border border-border hover:shadow-lg transition-shadow">
                 {item.image_url && (
-                  <img src={item.image_url} alt={item.title} className="w-full h-40 object-cover" />
+                  <img src={item.image_url} alt={getTitle(item)} className="w-full h-40 object-cover" />
                 )}
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {item.category && <Badge variant="secondary" className="text-xs">{item.category}</Badge>}
-                    {item.source && item.source.startsWith('http') && (
-                      <a
-                        href={item.source}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary underline flex items-center gap-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        {item.source.replace(/^https?:\/\//, '').split('/')[0]}
-                      </a>
+                    {item.category && (
+                      <Badge variant="secondary" className="text-xs">
+                        {getCategoryLabel(item.category)}
+                      </Badge>
+                    )}
+                    {item.published_at && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(item.published_at).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN')}
+                      </p>
                     )}
                   </div>
-                  <h3 className="font-semibold text-foreground line-clamp-2">{item.title}</h3>
-                  {item.summary && <p className="text-sm text-muted-foreground line-clamp-2">{item.summary}</p>}
-                  {item.published_at && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(item.published_at).toLocaleDateString('hi-IN')}
+                  <h3 className="font-semibold text-foreground line-clamp-2">{getTitle(item)}</h3>
+                  {getSummary(item) && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">{getSummary(item)}</p>
+                  )}
+                  {/* Article link preview */}
+                  {(item.source_url || item.source) && (
+                    <p className="text-xs text-primary flex items-center gap-1 mt-1">
+                      <ExternalLink className="w-3 h-3" />
+                      {(item.source_url || item.source || '').replace(/^https?:\/\//, '').split('/')[0]}
                     </p>
                   )}
                 </div>
@@ -173,7 +195,7 @@ const NewsScreen: React.FC = () => {
 };
 
 const NewsDetailView: React.FC<{ newsId: string; onBack: () => void }> = ({ newsId, onBack }) => {
-  const { t } = useApp();
+  const { t, language } = useApp();
   const [article, setArticle] = useState<AgriNews | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -206,11 +228,19 @@ const NewsDetailView: React.FC<{ newsId: string; onBack: () => void }> = ({ news
     );
   }
 
+  const title = language === 'hi' && article.title_hi ? article.title_hi : article.title;
+  const summary = language === 'hi' && article.summary_hi ? article.summary_hi : article.summary;
+  const content = language === 'hi' && article.content_hi ? article.content_hi : article.content;
+  const articleLink = article.source_url || article.source;
+
+  // Also show the other language's title as a subtitle
+  const altTitle = language === 'hi' ? article.title : article.title_hi;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {article.image_url && (
         <div className="relative">
-          <img src={article.image_url} alt={article.title} className="w-full h-56 object-cover" />
+          <img src={article.image_url} alt={title} className="w-full h-56 object-cover" />
           <Button variant="ghost" size="iconSm" onClick={onBack} className="absolute top-4 left-4 bg-card/80 backdrop-blur-sm rounded-full">
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -224,30 +254,60 @@ const NewsDetailView: React.FC<{ newsId: string; onBack: () => void }> = ({ news
         </header>
       )}
       <main className="flex-1 p-4 space-y-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          {article.category && <Badge>{article.category}</Badge>}
-          {article.source && article.source.startsWith('http') && (
-            <a
-              href={article.source}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary underline flex items-center gap-1"
-            >
-              <ExternalLink className="w-3 h-3" />
-              {article.source.replace(/^https?:\/\//, '').split('/')[0]}
-            </a>
-          )}
-        </div>
-        <h1 className="text-2xl font-bold text-foreground">{article.title}</h1>
+        {/* Category badge */}
+        {article.category && (
+          <Badge>{article.category}</Badge>
+        )}
+
+        {/* Title */}
+        <h1 className="text-2xl font-bold text-foreground leading-tight">{title}</h1>
+
+        {/* Alt language title */}
+        {altTitle && (
+          <p className="text-sm text-muted-foreground italic border-l-2 border-primary/30 pl-3">{altTitle}</p>
+        )}
+
+        {/* Date */}
         {article.published_at && (
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             <Calendar className="w-4 h-4" />
-            {new Date(article.published_at).toLocaleDateString('hi-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+            {new Date(article.published_at).toLocaleDateString(
+              language === 'hi' ? 'hi-IN' : 'en-IN',
+              { year: 'numeric', month: 'long', day: 'numeric' }
+            )}
           </p>
         )}
-        <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
-          {article.content}
+
+        {/* Summary */}
+        {summary && (
+          <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
+            <p className="text-sm text-foreground font-medium">{summary}</p>
+          </div>
+        )}
+
+        {/* Full content */}
+        <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap leading-relaxed">
+          {content}
         </div>
+
+        {/* Article link at the bottom */}
+        {articleLink && (
+          <div className="pt-2 border-t border-border">
+            <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+              <Globe className="w-3 h-3" />
+              {t('स्रोत / Source', 'Source')}
+            </p>
+            <a
+              href={articleLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors w-full justify-center"
+            >
+              <ExternalLink className="w-4 h-4" />
+              {t('पूरा लेख पढ़ें', 'Read Full Article')}
+            </a>
+          </div>
+        )}
       </main>
     </div>
   );

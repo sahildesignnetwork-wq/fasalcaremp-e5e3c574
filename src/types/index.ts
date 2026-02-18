@@ -51,15 +51,15 @@ export interface PackageOfPractice {
   }[];
 }
 
-export type AppScreen = 
-  | 'splash' 
-  | 'language' 
-  | 'home' 
-  | 'cropSelect' 
-  | 'camera' 
-  | 'analyzing' 
-  | 'result' 
-  | 'advisory' 
+export type AppScreen =
+  | 'splash'
+  | 'language'
+  | 'home'
+  | 'cropSelect'
+  | 'camera'
+  | 'analyzing'
+  | 'result'
+  | 'advisory'
   | 'feedback'
   | 'pop'
   | 'popDetail'
@@ -71,10 +71,14 @@ export type AppScreen =
 export interface AgriNews {
   id: string;
   title: string;
+  title_hi: string | null;
   summary: string | null;
+  summary_hi: string | null;
   content: string;
+  content_hi: string | null;
   image_url: string | null;
   source: string | null;
+  source_url: string | null;
   category: string | null;
   published_at: string | null;
   created_at: string;

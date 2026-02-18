@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
 
     const categories = Object.keys(sourceMap);
 
-    const prompt = `You are an Indian agriculture news writer. Generate 3 NEW and UNIQUE English agriculture news articles relevant to Madhya Pradesh farmers in India.
+    const prompt = `You are an Indian agriculture news writer. Generate 3 NEW and UNIQUE agriculture news articles relevant to Madhya Pradesh farmers in India.
 
 DO NOT repeat these existing titles: ${existingTitles}
 
@@ -86,12 +86,11 @@ Each article must be about a DIFFERENT category from: ${categories.join(", ")}
 
 Return a JSON array with exactly 3 objects, each having:
 - "title": English title (max 80 chars, concise and informative)
-- "title in hindi": Hindi title (max 80 char, concise and informative)
+- "title_hi": Hindi title (max 80 chars, concise and informative)
 - "summary": English summary (max 150 chars, one sentence overview)
-- "summary in hindi": Hindi summary (max 150 chars, one sentence overview)
+- "summary_hi": Hindi summary (max 150 chars, one sentence overview)
 - "content": English detailed content (200-350 chars, factual and useful for farmers)
-- "content in hindi": Hindi detailed content (200-350 chars, factual and useful for farmers)
-- "category": one of the categories listed above (EXACT match required)
+- "content_hi": Hindi detailed content (200-350 chars, factual and useful for farmers)
 - "category": one of the categories listed above (EXACT match required)
 
 Return ONLY the JSON array, no markdown, no extra text.`;
@@ -133,12 +132,17 @@ Return ONLY the JSON array, no markdown, no extra text.`;
       const cat = a.category as string;
       const images = CATEGORY_IMAGES[cat] || DEFAULT_IMAGES;
       const image_url = images[Math.floor(Math.random() * images.length)];
+      const source = sourceMap[cat] || "https://agricoop.nic.in";
       return {
         title: a.title,
+        title_hi: a.title_hi || null,
         summary: a.summary || null,
+        summary_hi: a.summary_hi || null,
         content: a.content,
+        content_hi: a.content_hi || null,
         category: cat || null,
-        source: sourceMap[cat] || "https://agricoop.nic.in",
+        source,
+        source_url: source,
         image_url,
         published_at: new Date(now.getTime() - i * 60000).toISOString(),
       };
