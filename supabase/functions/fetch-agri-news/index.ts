@@ -86,8 +86,12 @@ Each article must be about a DIFFERENT category from: ${categories.join(", ")}
 
 Return a JSON array with exactly 3 objects, each having:
 - "title": English title (max 80 chars, concise and informative)
+- "title in hindi": Hindi title (max 80 char, concise and informative)
 - "summary": English summary (max 150 chars, one sentence overview)
+- "summary in hindi": Hindi summary (max 150 chars, one sentence overview)
 - "content": English detailed content (200-350 chars, factual and useful for farmers)
+- "content in hindi": Hindi detailed content (200-350 chars, factual and useful for farmers)
+- "category": one of the categories listed above (EXACT match required)
 - "category": one of the categories listed above (EXACT match required)
 
 Return ONLY the JSON array, no markdown, no extra text.`;
