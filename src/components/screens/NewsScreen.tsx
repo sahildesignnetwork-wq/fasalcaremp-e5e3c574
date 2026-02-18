@@ -128,9 +128,9 @@ const NewsScreen: React.FC = () => {
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     {item.category && <Badge variant="secondary" className="text-xs">{item.category}</Badge>}
-                  {item.source && (
+                    {item.source && item.source.startsWith('http') && (
                       <a
-                        href={item.source.startsWith('http') ? item.source : `https://${item.source}`}
+                        href={item.source}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-primary underline flex items-center gap-1"
@@ -226,9 +226,9 @@ const NewsDetailView: React.FC<{ newsId: string; onBack: () => void }> = ({ news
       <main className="flex-1 p-4 space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           {article.category && <Badge>{article.category}</Badge>}
-        {article.source && (
+          {article.source && article.source.startsWith('http') && (
             <a
-              href={article.source.startsWith('http') ? article.source : `https://${article.source}`}
+              href={article.source}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-primary underline flex items-center gap-1"
