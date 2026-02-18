@@ -6,6 +6,55 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Verified working Unsplash agriculture photo IDs mapped by category
+const CATEGORY_IMAGES: Record<string, string[]> = {
+  "Government Scheme": [
+    "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600",
+    "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=600",
+    "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600",
+  ],
+  "Market Price": [
+    "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600",
+    "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600",
+    "https://images.unsplash.com/photo-1543257580-7269da773bf5?w=600",
+  ],
+  "Weather": [
+    "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=600",
+    "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=600",
+    "https://images.unsplash.com/photo-1504608524841-42584120d693?w=600",
+  ],
+  "Technology": [
+    "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=600",
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600",
+    "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600",
+  ],
+  "Organic Farming": [
+    "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600",
+    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600",
+    "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600",
+  ],
+  "Pest Alert": [
+    "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600",
+    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+    "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600",
+  ],
+};
+
+const DEFAULT_IMAGES = [
+  "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600",
+  "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600",
+  "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600",
+];
+
+const sourceMap: Record<string, string> = {
+  "Government Scheme": "https://pmkisan.gov.in",
+  "Market Price": "https://agmarknet.gov.in",
+  "Weather": "https://mausam.imd.gov.in",
+  "Technology": "https://icar.org.in",
+  "Organic Farming": "https://mpkrishi.mp.gov.in",
+  "Pest Alert": "https://ppqs.gov.in",
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,38 +76,21 @@ Deno.serve(async (req) => {
 
     const existingTitles = (existing || []).map((n: any) => n.title).join("; ");
 
-    const categories = [
-      "Government Scheme",
-      "Market Price",
-      "Weather",
-      "Technology",
-      "Organic Farming",
-      "Pest Alert",
-    ];
+    const categories = Object.keys(sourceMap);
 
-    const sourceMap: Record<string, string> = {
-      "Government Scheme": "https://pmkisan.gov.in",
-      "Market Price": "https://agmarknet.gov.in",
-      "Weather": "https://mausam.imd.gov.in",
-      "Technology": "https://icar.org.in",
-      "Organic Farming": "https://mpkrishi.mp.gov.in",
-      "Pest Alert": "https://ppqs.gov.in",
-    };
-
-    const prompt = `You are an Indian agriculture news generator. Generate 3 NEW and UNIQUE Hindi agriculture news articles relevant to Madhya Pradesh farmers. 
+    const prompt = `You are an Indian agriculture news writer. Generate 3 NEW and UNIQUE English agriculture news articles relevant to Madhya Pradesh farmers in India.
 
 DO NOT repeat these existing titles: ${existingTitles}
 
 Each article must be about a DIFFERENT category from: ${categories.join(", ")}
 
 Return a JSON array with exactly 3 objects, each having:
-- "title": Hindi title (max 80 chars)
-- "summary": Hindi summary (max 150 chars)  
-- "content": Hindi detailed content (200-400 chars)
+- "title": English title (max 80 chars, concise and informative)
+- "summary": English summary (max 150 chars, one sentence overview)
+- "content": English detailed content (200-350 chars, factual and useful for farmers)
 - "category": one of the categories listed above (EXACT match required)
-- "image_url": use a relevant Unsplash image URL, format: https://images.unsplash.com/photo-{valid-photo-id}?w=600 (use real IDs like 1500937386664-56d1dfef3854, 1574323347407-f5e1ad6d020b, 1464226184884-fa280b87c399)
 
-Return ONLY the JSON array, no markdown or extra text.`;
+Return ONLY the JSON array, no markdown, no extra text.`;
 
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -71,7 +103,7 @@ Return ONLY the JSON array, no markdown or extra text.`;
         body: JSON.stringify({
           model: "google/gemini-2.5-flash-lite",
           messages: [{ role: "user", content: prompt }],
-          temperature: 0.9,
+          temperature: 0.85,
         }),
       }
     );
@@ -93,15 +125,20 @@ Return ONLY the JSON array, no markdown or extra text.`;
     }
 
     const now = new Date();
-    const rows = articles.map((a: any, i: number) => ({
-      title: a.title,
-      summary: a.summary || null,
-      content: a.content,
-      category: a.category || null,
-      source: sourceMap[a.category] || "https://agricoop.nic.in",
-      image_url: a.image_url || null,
-      published_at: new Date(now.getTime() - i * 60000).toISOString(),
-    }));
+    const rows = articles.map((a: any, i: number) => {
+      const cat = a.category as string;
+      const images = CATEGORY_IMAGES[cat] || DEFAULT_IMAGES;
+      const image_url = images[Math.floor(Math.random() * images.length)];
+      return {
+        title: a.title,
+        summary: a.summary || null,
+        content: a.content,
+        category: cat || null,
+        source: sourceMap[cat] || "https://agricoop.nic.in",
+        image_url,
+        published_at: new Date(now.getTime() - i * 60000).toISOString(),
+      };
+    });
 
     const { error } = await supabase.from("agri_news").insert(rows);
 
