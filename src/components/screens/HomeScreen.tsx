@@ -7,6 +7,15 @@ import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shiel
 import ieheLogo from '@/assets/iehe-logo.jpg';
 import { AgriNews } from '@/types';
 
+const CATEGORY_HI: Record<string, string> = {
+  'Government Scheme': 'सरकारी योजना',
+  'Market Price': 'बाजार भाव',
+  'Weather': 'मौसम',
+  'Technology': 'तकनीक',
+  'Organic Farming': 'जैविक खेती',
+  'Pest Alert': 'कीट चेतावनी',
+};
+
 const HomeScreen: React.FC = () => {
   const { t, setCurrentScreen, language } = useApp();
   const [user, setUser] = useState<any>(null);
@@ -132,7 +141,7 @@ const HomeScreen: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-medium text-foreground line-clamp-2">{language === 'hi' ? (item.title_hi || item.title) : item.title}</h4>
                     <div className="flex items-center gap-2 mt-1">
-                      {item.category && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{item.category}</Badge>}
+                      {item.category && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{language === 'hi' ? (CATEGORY_HI[item.category] || item.category) : item.category}</Badge>}
                       {item.published_at && (
                         <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                           <Calendar className="w-2.5 h-2.5" />
