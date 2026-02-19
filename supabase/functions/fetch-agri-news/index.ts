@@ -160,9 +160,10 @@ Return ONLY the JSON array, no markdown, no extra text.`;
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     console.error("Error fetching news:", err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
