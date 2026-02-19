@@ -8,7 +8,7 @@ import ieheLogo from '@/assets/iehe-logo.jpg';
 import { AgriNews } from '@/types';
 
 const HomeScreen: React.FC = () => {
-  const { t, setCurrentScreen } = useApp();
+  const { t, setCurrentScreen, language } = useApp();
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [featuredNews, setFeaturedNews] = useState<AgriNews[]>([]);
@@ -130,7 +130,7 @@ const HomeScreen: React.FC = () => {
                 <button key={item.id} onClick={() => setCurrentScreen('news')} className="w-full text-left bg-card rounded-xl p-3 border border-border shadow-sm flex gap-3 items-start">
                   {item.image_url && <img src={item.image_url} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />}
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-foreground line-clamp-2">{item.title}</h4>
+                    <h4 className="text-sm font-medium text-foreground line-clamp-2">{language === 'hi' ? (item.title_hi || item.title) : item.title}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       {item.category && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{item.category}</Badge>}
                       {item.published_at && (
