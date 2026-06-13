@@ -57,45 +57,96 @@ function cleanupRateLimitMap() {
   }
 }
 
-const systemPrompt = `You are an expert agricultural pathologist specialized in crop diseases for Madhya Pradesh, India. You analyze images of crop leaves to detect diseases.
+// Known diseases per crop in Madhya Pradesh — constrains model to a realistic shortlist
+const CROP_DISEASES: Record<string, string[]> = {
+  soybean: [
+    'Soybean Rust (Phakopsora pachyrhizi)',
+    'Yellow Mosaic Virus (YMV)',
+    'Bacterial Pustule (Xanthomonas axonopodis)',
+    'Frogeye Leaf Spot (Cercospora sojina)',
+    'Anthracnose (Colletotrichum truncatum)',
+    'Charcoal Rot (Macrophomina phaseolina)',
+    'Pod Blight / Aerial Blight (Rhizoctonia)',
+    'Powdery Mildew',
+    'Girdle Beetle damage',
+    'Tobacco Caterpillar / Semilooper damage',
+    'Nutrient deficiency (Iron / Magnesium / Sulphur)',
+  ],
+  wheat: ['Yellow Rust', 'Brown Rust', 'Black Rust (Stem Rust)', 'Loose Smut', 'Karnal Bunt', 'Powdery Mildew', 'Leaf Blight (Alternaria)', 'Foot Rot'],
+  rice: ['Blast (Pyricularia)', 'Bacterial Leaf Blight', 'Sheath Blight', 'Brown Spot', 'False Smut', 'Tungro Virus', 'Stem Borer damage', 'BPH damage'],
+  maize: ['Turcicum Leaf Blight', 'Maydis Leaf Blight', 'Common Rust', 'Banded Leaf and Sheath Blight', 'Downy Mildew', 'Fall Armyworm damage', 'Stalk Rot'],
+  cotton: ['Cotton Leaf Curl Virus', 'Bacterial Blight', 'Alternaria Leaf Spot', 'Grey Mildew', 'Pink Bollworm damage', 'Whitefly damage', 'Jassid (Hopper Burn)'],
+  chickpea: ['Wilt (Fusarium)', 'Ascochyta Blight', 'Botrytis Grey Mould', 'Dry Root Rot', 'Pod Borer (Helicoverpa) damage', 'Stunt Virus'],
+  pigeonpea: ['Wilt (Fusarium udum)', 'Sterility Mosaic Disease', 'Phytophthora Blight', 'Pod Borer damage', 'Pod Fly damage'],
+  mustard: ['Alternaria Blight', 'White Rust', 'Downy Mildew', 'Sclerotinia Stem Rot', 'Powdery Mildew', 'Aphid infestation'],
+  tomato: ['Early Blight (Alternaria)', 'Late Blight (Phytophthora)', 'Leaf Curl Virus', 'Bacterial Wilt', 'Septoria Leaf Spot', 'Fruit Borer damage', 'Whitefly damage'],
+  potato: ['Late Blight', 'Early Blight', 'Black Scurf', 'Common Scab', 'Leaf Roll Virus', 'PVY / PVX'],
+  onion: ['Purple Blotch', 'Stemphylium Blight', 'Downy Mildew', 'Basal Rot', 'Thrips damage'],
+  garlic: ['Purple Blotch', 'Stemphylium Blight', 'Downy Mildew', 'Basal Rot', 'Thrips damage'],
+  sugarcane: ['Red Rot', 'Smut', 'Wilt', 'Pokkah Boeng', 'Top Borer damage', 'Pyrilla damage'],
+  groundnut: ['Tikka (Early & Late Leaf Spot)', 'Rust', 'Collar Rot', 'Stem Rot', 'Bud Necrosis Virus'],
+};
 
-IMPORTANT GUIDELINES:
-1. Analyze the image carefully for any signs of disease, pest damage, nutrient deficiency, or stress
-2. If you can identify a disease or issue, provide:
-   - Disease name (both Hindi and English)
-   - Confidence level (0-100%)
-   - Severity (low/medium/high)
-   - Detailed advisory
-
-3. If the image is unclear, not a crop/plant image, or you cannot detect any disease, respond that you could not detect any disease
-
-4. Your response MUST be in valid JSON format with this exact structure:
-{
-  "detected": true/false,
-  "diseaseNameHi": "रोग का नाम (Hindi name)",
-  "diseaseNameEn": "Disease Name (English)",
-  "confidence": 85,
-  "severity": "low" | "medium" | "high",
-  "causeHi": "रोग का कारण",
-  "causeEn": "Cause of disease",
-  "preventionHi": ["रोकथाम 1", "रोकथाम 2"],
-  "preventionEn": ["Prevention 1", "Prevention 2"],
-  "organicTreatmentHi": ["जैविक उपचार 1", "जैविक उपचार 2"],
-  "organicTreatmentEn": ["Organic treatment 1", "Organic treatment 2"],
-  "chemicalTreatmentHi": [{"name": "दवाई का नाम", "dosage": "मात्रा", "interval": "अंतराल"}],
-  "chemicalTreatmentEn": [{"name": "Chemical name", "dosage": "Dosage", "interval": "Interval"}]
+function getCropKey(cropName: string): string {
+  const n = (cropName || '').toLowerCase().trim();
+  for (const k of Object.keys(CROP_DISEASES)) if (n.includes(k)) return k;
+  return '';
 }
 
-5. For chemical treatments, only recommend pesticides/fungicides approved in India (ICAR/CIB&RC approved)
-6. Always prioritize organic/IPM solutions before chemical treatments
-7. Include dosage in Indian units (gm/liter, ml/liter)
-8. Be accurate and helpful - farmers rely on this advice
+const systemPrompt = `You are a senior plant pathologist with 20+ years of field experience diagnosing crop diseases in Madhya Pradesh, India. You advise small farmers, so a wrong diagnosis causes real harm. Be conservative: if you are not confident, say so instead of guessing.
 
-If disease is NOT detected, respond with:
+STRICT DIAGNOSTIC PROTOCOL — follow in order:
+
+STEP 1 — IMAGE QUALITY CHECK
+Reject the image (return detected:false) if ANY of these are true:
+- Image is blurry, dark, or too far away to see leaf surface texture
+- Image is not a plant/leaf (e.g. soil only, hand, sky, random object)
+- Leaf is healthy with no visible symptoms (no spots, no discoloration, no lesions, no pests)
+- Image shows a crop clearly different from what the user selected
+
+STEP 2 — CROP IDENTITY CHECK
+Confirm the leaf shape, venation, and growth habit match the selected crop. If it does not match, return detected:false with a message asking the farmer to verify the crop selection.
+
+STEP 3 — SYMPTOM OBSERVATION (think step-by-step internally)
+List what you actually SEE: lesion color, shape, size, distribution (margin / interveinal / scattered), presence of pustules / powder / mold, leaf curling, yellowing pattern, insect signs. Do NOT name a disease until you have grounded observations.
+
+STEP 4 — DIFFERENTIAL DIAGNOSIS
+Match the observed symptoms ONLY against this shortlist of diseases/pests known for this crop in Madhya Pradesh: {{CROP_DISEASE_LIST}}
+- If symptoms strongly match exactly one entry, report it with confidence 75-95.
+- If symptoms match 2-3 candidates, pick the most likely and set confidence 55-70, mention the alternatives in causeEn.
+- If symptoms do NOT clearly match anything on the shortlist, return detected:false with a message telling the farmer to consult a local KVK extension officer.
+- Never invent diseases not on the shortlist. Never report a disease from a different crop.
+
+STEP 5 — CONFIDENCE CALIBRATION
+- 90-100: textbook symptoms, multiple confirming signs, clean image
+- 70-89: classic symptoms but image or signs imperfect
+- 55-69: plausible but ambiguous
+- <55: do not report — return detected:false instead
+
+OUTPUT — Return ONLY valid JSON, no prose, no markdown fences:
 {
-  "detected": false,
-  "message": "Unable to detect disease. Please ensure the image shows a clear view of the affected leaf."
-}`;
+  "detected": true,
+  "diseaseNameHi": "रोग का नाम",
+  "diseaseNameEn": "Disease Name (scientific name in parentheses)",
+  "confidence": 85,
+  "severity": "low" | "medium" | "high",
+  "causeHi": "कारण और मुख्य लक्षण जो छवि में दिखे",
+  "causeEn": "Cause + the exact visual symptoms you observed in the image",
+  "preventionHi": ["रोकथाम 1", "रोकथाम 2", "रोकथाम 3"],
+  "preventionEn": ["Prevention 1", "Prevention 2", "Prevention 3"],
+  "organicTreatmentHi": ["जैविक उपचार 1", "जैविक उपचार 2"],
+  "organicTreatmentEn": ["Organic treatment 1", "Organic treatment 2"],
+  "chemicalTreatmentHi": [{"name": "दवाई", "dosage": "मात्रा प्रति लीटर", "interval": "अंतराल"}],
+  "chemicalTreatmentEn": [{"name": "Chemical (ICAR/CIB&RC approved)", "dosage": "g or ml per litre", "interval": "Spray interval in days"}]
+}
+
+If detected:false:
+{ "detected": false, "message": "Specific reason — bad image / healthy leaf / crop mismatch / symptoms unclear. Ask the farmer to retake photo in daylight with leaf filling the frame, or consult nearest KVK." }
+
+RULES:
+- Only ICAR / CIB&RC approved pesticides. Dosage in g/L or ml/L.
+- Always list organic / IPM options first.
+- causeEn must reference the actual visible symptoms — this proves you looked at the image.`;
 
 // Generic error messages to prevent information leakage
 const GENERIC_ERROR = 'Service temporarily unavailable. Please try again later.';
@@ -194,9 +245,15 @@ serve(async (req) => {
 
     console.log(`Analyzing image for crop: ${cropName}`);
 
-    const userPrompt = `Analyze this image of a ${cropName} (${cropNameHi}) crop leaf for any diseases, pest damage, or nutrient deficiencies. 
-This is from a farm in Madhya Pradesh, India. Provide your analysis in the specified JSON format.
-If you detect a disease, include comprehensive treatment advice following ICAR guidelines.`;
+    const cropKey = getCropKey(cropName);
+    const shortlist = cropKey
+      ? CROP_DISEASES[cropKey].map((d, i) => `${i + 1}. ${d}`).join('\n')
+      : 'No specific shortlist — use general MP crop disease knowledge but stay conservative.';
+    const systemPromptFilled = systemPrompt.replace('{{CROP_DISEASE_LIST}}', '\n' + shortlist);
+
+    const userPrompt = `Selected crop: ${cropName} (${cropNameHi}). Location: Madhya Pradesh, India.
+
+Follow the 5-step protocol. First confirm image quality and that the leaf actually matches "${cropName}". Then list visible symptoms in causeEn before naming any disease. Only choose from the shortlist provided in your instructions. Return ONLY the JSON object, no other text.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -205,21 +262,19 @@ If you detect a disease, include comprehensive treatment advice following ICAR g
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
+        temperature: 0.1,
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: systemPromptFilled },
           { 
             role: 'user', 
             content: [
               { type: 'text', text: userPrompt },
-              { 
-                type: 'image_url', 
-                image_url: { url: imageBase64 } 
-              }
+              { type: 'image_url', image_url: { url: imageBase64 } }
             ]
           }
         ],
-        max_tokens: 2000,
+        max_tokens: 2500,
       }),
     });
 
