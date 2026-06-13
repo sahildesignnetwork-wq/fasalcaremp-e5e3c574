@@ -338,6 +338,15 @@ Follow the 5-step protocol. First confirm image quality and that the leaf actual
 
     console.log('Analysis complete:', analysisResult.detected ? 'Disease detected' : 'No disease detected');
 
+    // Low-confidence guard: don't show shaky diagnoses to farmers
+    if (analysisResult?.detected && typeof analysisResult.confidence === 'number' && analysisResult.confidence < 55) {
+      console.log(`Suppressing low-confidence result (${analysisResult.confidence})`);
+      analysisResult = {
+        detected: false,
+        message: `Symptoms are not clear enough for a confident diagnosis (${analysisResult.confidence}% match). Please retake the photo in daylight with the affected leaf filling the frame, or consult your nearest KVK extension officer.`,
+      };
+    }
+
     return new Response(
       JSON.stringify(analysisResult),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
