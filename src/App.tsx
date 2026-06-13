@@ -16,6 +16,7 @@ import PopScreen from "@/components/screens/PopScreen";
 import LoginScreen from "@/components/screens/LoginScreen";
 import NewsScreen from "@/components/screens/NewsScreen";
 import AdminNewsScreen from "@/components/screens/AdminNewsScreen";
+import VoiceChatbot from "@/components/VoiceChatbot";
 
 const queryClient = new QueryClient();
 
@@ -55,9 +56,12 @@ const AppContent = () => {
     }
   };
 
+  const showBot = !['splash', 'language', 'camera', 'analyzing'].includes(currentScreen);
+
   return (
     <div className="min-h-screen bg-background font-hindi">
       {renderScreen()}
+      {showBot && <VoiceChatbot />}
     </div>
   );
 };
