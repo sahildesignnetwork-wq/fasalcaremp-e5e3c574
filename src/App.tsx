@@ -18,6 +18,7 @@ import NewsScreen from "@/components/screens/NewsScreen";
 import AdminNewsScreen from "@/components/screens/AdminNewsScreen";
 import WeatherScreen from "@/components/screens/WeatherScreen";
 import MandiScreen from "@/components/screens/MandiScreen";
+import CalculatorScreen from "@/components/screens/CalculatorScreen";
 import VoiceChatbot from "@/components/VoiceChatbot";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,8 @@ const AppContent = () => {
         return <WeatherScreen />;
       case 'mandi':
         return <MandiScreen />;
+      case 'calculator':
+        return <CalculatorScreen />;
       default:
         return <SplashScreen />;
     }
