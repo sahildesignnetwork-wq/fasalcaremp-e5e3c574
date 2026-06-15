@@ -16,6 +16,8 @@ import PopScreen from "@/components/screens/PopScreen";
 import LoginScreen from "@/components/screens/LoginScreen";
 import NewsScreen from "@/components/screens/NewsScreen";
 import AdminNewsScreen from "@/components/screens/AdminNewsScreen";
+import WeatherScreen from "@/components/screens/WeatherScreen";
+import MandiScreen from "@/components/screens/MandiScreen";
 import VoiceChatbot from "@/components/VoiceChatbot";
 
 const queryClient = new QueryClient();
@@ -51,6 +53,10 @@ const AppContent = () => {
         return <NewsScreen />;
       case 'adminNews':
         return <AdminNewsScreen />;
+      case 'weather':
+        return <WeatherScreen />;
+      case 'mandi':
+        return <MandiScreen />;
       default:
         return <SplashScreen />;
     }
