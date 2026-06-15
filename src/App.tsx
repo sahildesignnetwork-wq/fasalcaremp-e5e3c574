@@ -58,6 +58,8 @@ const AppContent = () => {
         return <WeatherScreen />;
       case 'mandi':
         return <MandiScreen />;
+      case 'calculator':
+        return <CalculatorScreen />;
       default:
         return <SplashScreen />;
     }
