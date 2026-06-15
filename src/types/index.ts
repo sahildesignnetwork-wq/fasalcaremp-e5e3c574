@@ -66,7 +66,9 @@ export type AppScreen =
   | 'login'
   | 'news'
   | 'newsDetail'
-  | 'adminNews';
+  | 'adminNews'
+  | 'weather'
+  | 'mandi';
 
 export interface AgriNews {
   id: string;
