@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink } from 'lucide-react';
+import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink, CloudSun, Store } from 'lucide-react';
 import ieheLogo from '@/assets/iehe-logo.jpg';
 import { AgriNews } from '@/types';
 
@@ -120,6 +120,34 @@ const HomeScreen: React.FC = () => {
               <p className="text-xs opacity-80">{t('खेती के तरीके', 'Farming Practices')}</p>
             </div>
           </Button>
+        </div>
+
+        {/* Weather + Mandi quick row */}
+        <div className="grid grid-cols-2 gap-4 mb-6 animate-fade-in-up delay-100">
+          <button
+            onClick={() => setCurrentScreen('weather')}
+            className="bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-3 text-left active:scale-95 transition-transform"
+          >
+            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CloudSun className="w-7 h-7 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-sm text-foreground">{t('मौसम', 'Weather')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('7-दिन पूर्वानुमान', '7-day forecast')}</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setCurrentScreen('mandi')}
+            className="bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-3 text-left active:scale-95 transition-transform"
+          >
+            <div className="w-12 h-12 bg-accent/15 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Store className="w-7 h-7 text-accent" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-sm text-foreground">{t('मंडी भाव', 'Mandi Prices')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('आज के ताज़ा भाव', 'Latest prices today')}</p>
+            </div>
+          </button>
         </div>
 
         {/* Featured News */}
