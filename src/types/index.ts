@@ -69,7 +69,8 @@ export type AppScreen =
   | 'adminNews'
   | 'weather'
   | 'mandi'
-  | 'calculator';
+  | 'calculator'
+  | 'shop';
 
 export interface AgriNews {
   id: string;

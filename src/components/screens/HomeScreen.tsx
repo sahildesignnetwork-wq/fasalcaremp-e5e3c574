@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink, CloudSun, Store, Calculator } from 'lucide-react';
+import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink, CloudSun, Store, Calculator, ShoppingCart } from 'lucide-react';
 import ieheLogo from '@/assets/iehe-logo.jpg';
 import { AgriNews } from '@/types';
 
@@ -150,19 +150,33 @@ const HomeScreen: React.FC = () => {
           </button>
         </div>
 
-        {/* Calculator full-width */}
-        <button
-          onClick={() => setCurrentScreen('calculator')}
-          className="w-full mb-6 bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-3 text-left active:scale-95 transition-transform animate-fade-in-up delay-100"
-        >
-          <div className="w-12 h-12 bg-success/15 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Calculator className="w-7 h-7 text-success" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-foreground">{t('खाद/दवा कैलकुलेटर', 'Fertilizer/Spray Calculator')}</p>
-            <p className="text-[11px] text-muted-foreground">{t('अपने खेत के हिसाब से सही मात्रा निकालें', 'Get exact dose for your land')}</p>
-          </div>
-        </button>
+        {/* Calculator + Shop row */}
+        <div className="grid grid-cols-1 gap-3 mb-6 animate-fade-in-up delay-100">
+          <button
+            onClick={() => setCurrentScreen('calculator')}
+            className="w-full bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-3 text-left active:scale-95 transition-transform"
+          >
+            <div className="w-12 h-12 bg-success/15 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Calculator className="w-7 h-7 text-success" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm text-foreground">{t('खाद/दवा कैलकुलेटर', 'Fertilizer/Spray Calculator')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('अपने खेत के हिसाब से सही मात्रा निकालें', 'Get exact dose for your land')}</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setCurrentScreen('shop')}
+            className="w-full bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-3 text-left active:scale-95 transition-transform"
+          >
+            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <ShoppingCart className="w-7 h-7 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm text-foreground">{t('कृषि बाज़ार – दाम तुलना', 'Agri Bazaar – Price Compare')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('दवा/खाद का सबसे अच्छा भाव खोजें', 'Best price across local & online stores')}</p>
+            </div>
+          </button>
+        </div>
 
         {/* Featured News */}
         {featuredNews.length > 0 && (
