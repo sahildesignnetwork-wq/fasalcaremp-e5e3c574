@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink, CloudSun, Store, Calculator, ShoppingCart } from 'lucide-react';
+import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink, CloudSun, Store, Calculator, ShoppingCart, Landmark } from 'lucide-react';
 import ieheLogo from '@/assets/iehe-logo.jpg';
 import { AgriNews } from '@/types';
 
@@ -174,6 +174,18 @@ const HomeScreen: React.FC = () => {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-foreground">{t('कृषि बाज़ार – दाम तुलना', 'Agri Bazaar – Price Compare')}</p>
               <p className="text-[11px] text-muted-foreground">{t('दवा/खाद का सबसे अच्छा भाव खोजें', 'Best price across local & online stores')}</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setCurrentScreen('schemes')}
+            className="w-full bg-card rounded-2xl p-4 shadow-md border border-border flex items-center gap-3 text-left active:scale-95 transition-transform"
+          >
+            <div className="w-12 h-12 bg-accent/15 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Landmark className="w-7 h-7 text-accent" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm text-foreground">{t('सरकारी योजनाएँ व संपर्क', 'Govt. Schemes & Contacts')}</p>
+              <p className="text-[11px] text-muted-foreground">{t('सब्सिडी, अनुदान व अधिकारी हेल्पलाइन', 'Subsidies, grants & official helplines')}</p>
             </div>
           </button>
         </div>
