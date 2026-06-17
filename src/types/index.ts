@@ -71,7 +71,8 @@ export type AppScreen =
   | 'mandi'
   | 'calculator'
   | 'shop'
-  | 'schemes';
+  | 'schemes'
+  | 'varieties';
 
 export interface AgriNews {
   id: string;
