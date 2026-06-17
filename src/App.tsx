@@ -21,6 +21,7 @@ import MandiScreen from "@/components/screens/MandiScreen";
 import CalculatorScreen from "@/components/screens/CalculatorScreen";
 import ShopScreen from "@/components/screens/ShopScreen";
 import SchemesScreen from "@/components/screens/SchemesScreen";
+import VarietiesScreen from "@/components/screens/VarietiesScreen";
 import VoiceChatbot from "@/components/VoiceChatbot";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,8 @@ const AppContent = () => {
         return <ShopScreen />;
       case 'schemes':
         return <SchemesScreen />;
+      case 'varieties':
+        return <VarietiesScreen />;
       default:
         return <SplashScreen />;
     }
