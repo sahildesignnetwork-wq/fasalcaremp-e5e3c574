@@ -3,7 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink, CloudSun, Store, Calculator, ShoppingCart, Landmark, Sprout } from 'lucide-react';
+import { Camera, BookOpen, Settings, Info, Home, Newspaper, LogIn, LogOut, Shield, Calendar, ExternalLink, CloudSun, Store, Calculator, ShoppingCart, Landmark, Sprout, TrendingUp } from 'lucide-react';
 import ieheLogo from '@/assets/iehe-logo.jpg';
 import { AgriNews } from '@/types';
 
@@ -198,6 +198,21 @@ const HomeScreen: React.FC = () => {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-foreground">{t('फसल किस्में', 'Crop Varieties')}</p>
               <p className="text-[11px] text-muted-foreground">{t('कौन सी किस्म उगाएँ – उपज, अवधि व क्षेत्र', 'Which variety to grow – yield, duration & region')}</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setCurrentScreen('profitBooster')}
+            className="w-full bg-gradient-to-r from-primary/10 to-success/10 rounded-2xl p-4 shadow-md border border-primary/20 flex items-center gap-3 text-left active:scale-95 transition-transform"
+          >
+            <div className="w-12 h-12 bg-primary/15 rounded-xl flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-7 h-7 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm text-foreground flex items-center gap-1">
+                {t('मुनाफा बूस्टर', 'Profit Booster')}
+                <span className="text-[9px] bg-success text-success-foreground px-1.5 py-0.5 rounded-full">NEW</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground">{t('ताज़ा अपडेट व आपकी ज़मीन के लिए सुझाव', 'Latest updates & area-based suggestions')}</p>
             </div>
           </button>
         </div>

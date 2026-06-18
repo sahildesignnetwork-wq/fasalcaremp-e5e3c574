@@ -22,6 +22,7 @@ import CalculatorScreen from "@/components/screens/CalculatorScreen";
 import ShopScreen from "@/components/screens/ShopScreen";
 import SchemesScreen from "@/components/screens/SchemesScreen";
 import VarietiesScreen from "@/components/screens/VarietiesScreen";
+import ProfitBoosterScreen from "@/components/screens/ProfitBoosterScreen";
 import VoiceChatbot from "@/components/VoiceChatbot";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,8 @@ const AppContent = () => {
         return <SchemesScreen />;
       case 'varieties':
         return <VarietiesScreen />;
+      case 'profitBooster':
+        return <ProfitBoosterScreen />;
       default:
         return <SplashScreen />;
     }

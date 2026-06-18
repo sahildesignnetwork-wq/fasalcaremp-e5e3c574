@@ -72,7 +72,8 @@ export type AppScreen =
   | 'calculator'
   | 'shop'
   | 'schemes'
-  | 'varieties';
+  | 'varieties'
+  | 'profitBooster';
 
 export interface AgriNews {
   id: string;
