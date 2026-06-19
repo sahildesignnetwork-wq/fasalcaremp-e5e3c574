@@ -30,7 +30,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const t = (hi: string, en: string) => (language === 'hi' ? hi : en);
+  // Regional MP languages (Malvi, Nimari, Bundeli, Bagheli, Gondi) fall back to Hindi script for shared vocabulary.
+  const t = (hi: string, en: string) => (language === 'en' ? en : hi);
 
   return (
     <AppContext.Provider
