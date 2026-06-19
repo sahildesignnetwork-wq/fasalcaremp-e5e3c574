@@ -108,7 +108,7 @@ const LanguageScreen: React.FC = () => {
       </div>
 
       {/* Credits */}
-      <div className="absolute bottom-4 left-0 right-0 px-4">
+      <div className="w-full max-w-sm mt-4 px-2">
         <div className="flex items-center justify-center gap-1.5 mb-1">
           <Users className="w-3 h-3 text-muted-foreground" />
           <p className="text-[10px] text-muted-foreground text-center">
