@@ -1,4 +1,4 @@
-export type Language = 'hi' | 'en';
+export type Language = 'hi' | 'en' | 'malvi' | 'nimari' | 'bundeli' | 'bagheli' | 'gondi';
 
 export type CropSeason = 'kharif' | 'rabi' | 'horticulture';
 
