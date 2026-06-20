@@ -14,7 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        hindi: ['"Noto Sans Devanagari"', 'Poppins', 'sans-serif'],
+        display: ['Outfit', '"Noto Sans Devanagari"', 'system-ui', 'sans-serif'],
+        body: ['Figtree', '"Noto Sans Devanagari"', 'system-ui', 'sans-serif'],
+        hindi: ['"Noto Sans Devanagari"', 'Figtree', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

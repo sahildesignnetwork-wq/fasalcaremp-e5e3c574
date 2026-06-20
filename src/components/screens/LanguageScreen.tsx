@@ -53,33 +53,31 @@ const LanguageScreen: React.FC = () => {
 
         <div className="space-y-2">
           {LANGUAGES.map((l) => (
-            <Button
+            <button
               key={l.code}
-              variant="outline"
-              size="lg"
               onClick={() => handleLanguageSelect(l.code)}
-              className="w-full justify-start gap-3 h-14 text-left hover:border-primary hover:bg-primary/5"
+              className="w-full flex items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left shadow-sm transition-all hover:border-primary hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
             >
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg font-semibold shrink-0 ${
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold shrink-0 font-hindi ${
                 l.recommended ? 'bg-accent/20 text-accent' :
                 l.code === 'en' ? 'bg-primary/10 text-primary' :
-                'bg-secondary/40 text-foreground'
+                'bg-secondary text-foreground'
               }`}>
                 {l.glyph}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-base font-semibold leading-tight">{l.native}</p>
+                <p className="text-base font-semibold font-hindi text-foreground">{l.native}</p>
                 <p className="text-[11px] text-muted-foreground truncate">{l.sub}</p>
                 {l.region && (
                   <p className="text-[10px] text-muted-foreground/80 truncate">{l.region}</p>
                 )}
               </div>
               {l.recommended && (
-                <span className="text-[9px] font-bold bg-accent text-accent-foreground px-1.5 py-0.5 rounded ml-auto">
+                <span className="text-[9px] font-bold bg-accent text-accent-foreground px-1.5 py-0.5 rounded ml-auto shrink-0">
                   ★
                 </span>
               )}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
