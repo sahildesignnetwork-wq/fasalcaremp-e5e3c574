@@ -28,6 +28,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [diseaseResult, setDiseaseResult] = useState<DiseaseResult | null>(null);
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
