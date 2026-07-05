@@ -46,7 +46,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         selectedCrop,
         setSelectedCrop,
         capturedImage,
-        capturedImage,
         setCapturedImage,
         capturedImages,
         setCapturedImages,
