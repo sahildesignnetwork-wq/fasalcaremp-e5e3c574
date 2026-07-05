@@ -191,18 +191,31 @@ const AnalyzingScreen: React.FC = () => {
             active={status === 'scanning'}
             completed={status !== 'scanning'}
           />
-          <ProgressStep 
+          <ProgressStep
             icon={<Leaf className="w-4 h-4" />}
-            text={t('रोग पहचान चल रही है', 'Identifying disease')}
+            text={t('3 AI मॉडल से पहचान', 'Identifying with 3 AI models')}
             active={status === 'identifying'}
+            completed={status === 'consensus' || status === 'preparing'}
+          />
+          <ProgressStep
+            icon={<Users className="w-4 h-4" />}
+            text={t('कंसेंसस — सहमति जांच', 'Consensus — cross-checking')}
+            active={status === 'consensus'}
             completed={status === 'preparing'}
           />
-          <ProgressStep 
+          <ProgressStep
             icon={<Sparkles className="w-4 h-4" />}
             text={t('सलाह तैयार हो रही है', 'Preparing advisory')}
             active={status === 'preparing'}
           />
         </div>
+
+        {consensusInfo && (
+          <div className="mt-4 inline-flex items-center gap-2 bg-primary-foreground/15 rounded-full px-3 py-1.5 text-primary-foreground text-sm">
+            <Users className="w-4 h-4" />
+            {consensusInfo.agree}/{consensusInfo.total} {t('AI सहमत', 'AI agree')}
+          </div>
+        )}
       </div>
 
       {/* Loading dots */}
