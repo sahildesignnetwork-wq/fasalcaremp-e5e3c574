@@ -10,6 +10,8 @@ interface AppContextType {
   setSelectedCrop: (crop: Crop | null) => void;
   capturedImage: string | null;
   setCapturedImage: (image: string | null) => void;
+  capturedImages: string[];
+  setCapturedImages: (images: string[]) => void;
   diseaseResult: DiseaseResult | null;
   setDiseaseResult: (result: DiseaseResult | null) => void;
   advisory: Advisory | null;
