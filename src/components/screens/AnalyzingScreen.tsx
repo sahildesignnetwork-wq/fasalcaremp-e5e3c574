@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Leaf, Search, Sparkles, AlertCircle } from 'lucide-react';
+import { Leaf, Search, Sparkles, AlertCircle, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const AnalyzingScreen: React.FC = () => {
-  const { 
-    t, 
-    setCurrentScreen, 
-    capturedImage, 
-    selectedCrop, 
-    setDiseaseResult, 
+  const {
+    t,
+    setCurrentScreen,
+    capturedImage,
+    capturedImages,
+    selectedCrop,
+    setDiseaseResult,
     setAdvisory,
-    language 
+    language
   } = useApp();
   const { toast } = useToast();
-  const [status, setStatus] = useState<'scanning' | 'identifying' | 'preparing'>('scanning');
+  const [status, setStatus] = useState<'scanning' | 'identifying' | 'consensus' | 'preparing'>('scanning');
   const [error, setError] = useState<string | null>(null);
+  const [consensusInfo, setConsensusInfo] = useState<{ agree: number; total: number } | null>(null);
+
 
   useEffect(() => {
     const analyzeImage = async () => {
