@@ -1,41 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Leaf, Search, Sparkles, AlertCircle } from 'lucide-react';
+import { Leaf, Search, Sparkles, AlertCircle, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const AnalyzingScreen: React.FC = () => {
-  const { 
-    t, 
-    setCurrentScreen, 
-    capturedImage, 
-    selectedCrop, 
-    setDiseaseResult, 
+  const {
+    t,
+    setCurrentScreen,
+    capturedImage,
+    capturedImages,
+    selectedCrop,
+    setDiseaseResult,
     setAdvisory,
-    language 
+    language
   } = useApp();
   const { toast } = useToast();
-  const [status, setStatus] = useState<'scanning' | 'identifying' | 'preparing'>('scanning');
+  const [status, setStatus] = useState<'scanning' | 'identifying' | 'consensus' | 'preparing'>('scanning');
   const [error, setError] = useState<string | null>(null);
+  const [consensusInfo, setConsensusInfo] = useState<{ agree: number; total: number } | null>(null);
+
 
   useEffect(() => {
     const analyzeImage = async () => {
-      if (!capturedImage || !selectedCrop) {
+      const images = capturedImages && capturedImages.length > 0
+        ? capturedImages
+        : (capturedImage ? [capturedImage] : []);
+
+      if (images.length === 0 || !selectedCrop) {
         setCurrentScreen('camera');
         return;
       }
 
       try {
-        // Update status through the stages
-        setTimeout(() => setStatus('identifying'), 1000);
-        setTimeout(() => setStatus('preparing'), 2500);
+        setTimeout(() => setStatus('identifying'), 800);
+        setTimeout(() => setStatus('consensus'), 2200);
+        setTimeout(() => setStatus('preparing'), 4000);
 
-        console.log('Sending image to AI for analysis...');
-        
-        // Call the edge function
+        console.log(`Sending ${images.length} image(s) to consensus engine...`);
+
         const { data, error: functionError } = await supabase.functions.invoke('detect-disease', {
           body: {
-            imageBase64: capturedImage,
+            images,
+            imageBase64: images[0], // backward compat
             cropName: selectedCrop.nameEn,
             cropNameHi: selectedCrop.nameHi,
           }
@@ -46,26 +53,27 @@ const AnalyzingScreen: React.FC = () => {
           throw new Error(functionError.message || 'Analysis failed');
         }
 
-        console.log('AI Response:', data);
+        console.log('Consensus response:', data);
 
-        // Check if disease was detected
+        if (data.consensus) {
+          setConsensusInfo({ agree: data.consensus.agree, total: data.consensus.total });
+        }
+
         if (!data.detected) {
-          // No disease detected or unable to analyze
           setError(data.message || t(
-            'रोग का पता नहीं लगाया जा सका। कृपया स्पष्ट फोटो से पुनः प्रयास करें।',
-            'Could not detect disease. Please try again with a clearer photo.'
+            'AI मॉडलों में सहमति नहीं बनी। कृपया 3 स्पष्ट फोटो पुनः लें।',
+            'AI models could not agree. Please recapture 3 clear photos.'
           ));
           return;
         }
 
-        // Disease detected - set results
         const result = {
           id: `analysis-${Date.now()}`,
           diseaseNameHi: data.diseaseNameHi || 'अज्ञात रोग',
           diseaseNameEn: data.diseaseNameEn || 'Unknown Disease',
           confidence: data.confidence || 75,
           severity: data.severity || 'medium',
-          imageUrl: capturedImage,
+          imageUrl: images[0],
         };
 
         const advisory = {
@@ -82,12 +90,11 @@ const AnalyzingScreen: React.FC = () => {
         setDiseaseResult(result);
         setAdvisory(advisory);
         setCurrentScreen('result');
-        
+
       } catch (err) {
         console.error('Analysis failed:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        
-        // Show specific error messages
+
         if (errorMessage.includes('busy') || errorMessage.includes('429')) {
           setError(t(
             'सेवा व्यस्त है। कृपया कुछ समय बाद पुनः प्रयास करें।',
@@ -108,7 +115,8 @@ const AnalyzingScreen: React.FC = () => {
     };
 
     analyzeImage();
-  }, [capturedImage, selectedCrop, setCurrentScreen, setDiseaseResult, setAdvisory, t, language]);
+  }, [capturedImage, capturedImages, selectedCrop, setCurrentScreen, setDiseaseResult, setAdvisory, t, language]);
+
 
   // Error state
   if (error) {
@@ -183,18 +191,31 @@ const AnalyzingScreen: React.FC = () => {
             active={status === 'scanning'}
             completed={status !== 'scanning'}
           />
-          <ProgressStep 
+          <ProgressStep
             icon={<Leaf className="w-4 h-4" />}
-            text={t('रोग पहचान चल रही है', 'Identifying disease')}
+            text={t('3 AI मॉडल से पहचान', 'Identifying with 3 AI models')}
             active={status === 'identifying'}
+            completed={status === 'consensus' || status === 'preparing'}
+          />
+          <ProgressStep
+            icon={<Users className="w-4 h-4" />}
+            text={t('कंसेंसस — सहमति जांच', 'Consensus — cross-checking')}
+            active={status === 'consensus'}
             completed={status === 'preparing'}
           />
-          <ProgressStep 
+          <ProgressStep
             icon={<Sparkles className="w-4 h-4" />}
             text={t('सलाह तैयार हो रही है', 'Preparing advisory')}
             active={status === 'preparing'}
           />
         </div>
+
+        {consensusInfo && (
+          <div className="mt-4 inline-flex items-center gap-2 bg-primary-foreground/15 rounded-full px-3 py-1.5 text-primary-foreground text-sm">
+            <Users className="w-4 h-4" />
+            {consensusInfo.agree}/{consensusInfo.total} {t('AI सहमत', 'AI agree')}
+          </div>
+        )}
       </div>
 
       {/* Loading dots */}

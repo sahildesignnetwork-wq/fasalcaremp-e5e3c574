@@ -153,99 +153,135 @@ const GENERIC_ERROR = 'Service temporarily unavailable. Please try again later.'
 const ANALYSIS_ERROR = 'Unable to analyze image. Please try again.';
 const RATE_LIMIT_ERROR = 'Too many requests. Please wait before trying again.';
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+// Models used in the consensus engine — 3 independent AIs vote on the diagnosis
+const CONSENSUS_MODELS = [
+  'google/gemini-2.5-pro',
+  'google/gemini-2.5-flash',
+  'openai/gpt-5-mini',
+];
+
+// Normalize a disease name for comparison: lowercase, strip scientific-name parentheses,
+// strip punctuation, collapse whitespace, and drop generic filler words.
+function normalizeDiseaseName(name: string): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\b(disease|damage|infestation|virus|blight|the|and|of)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Two normalized names "match" if one contains the other or they share the same
+// leading token (e.g. "yellow rust" ~ "yellow rust puccinia striiformis").
+function namesMatch(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.includes(b) || b.includes(a)) return true;
+  const aTokens = a.split(' ').filter(Boolean);
+  const bTokens = b.split(' ').filter(Boolean);
+  if (aTokens.length === 0 || bTokens.length === 0) return false;
+  // Require at least 2 shared tokens for a fuzzy match
+  const shared = aTokens.filter((t) => bTokens.includes(t));
+  return shared.length >= 2;
+}
+
+async function callModel(
+  model: string,
+  systemPromptFilled: string,
+  userPrompt: string,
+  images: string[],
+  apiKey: string,
+): Promise<any | null> {
+  try {
+    const imageBlocks = images.map((url) => ({ type: 'image_url', image_url: { url } }));
+    const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.1,
+        messages: [
+          { role: 'system', content: systemPromptFilled },
+          { role: 'user', content: [{ type: 'text', text: userPrompt }, ...imageBlocks] },
+        ],
+        max_tokens: 2500,
+      }),
+    });
+    if (!res.ok) {
+      console.error(`Model ${model} failed with status ${res.status}`);
+      return { __error: res.status };
+    }
+    const json = await res.json();
+    const content = json.choices?.[0]?.message?.content;
+    if (!content) return null;
+    let jsonStr = content;
+    const match = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (match) jsonStr = match[1].trim();
+    try {
+      return JSON.parse(jsonStr);
+    } catch {
+      console.error(`Model ${model} returned non-JSON`);
+      return null;
+    }
+  } catch (e) {
+    console.error(`Model ${model} threw`, e);
+    return null;
   }
+}
 
-  // Periodic cleanup of rate limit map
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+
   cleanupRateLimitMap();
-
-  // Check rate limit
   const clientIP = getClientIP(req);
   const rateLimitResult = checkRateLimit(clientIP);
-  
   if (!rateLimitResult.allowed) {
-    console.error(`Rate limit exceeded for IP: ${clientIP}`);
-    return new Response(
-      JSON.stringify({ error: RATE_LIMIT_ERROR }),
-      { 
-        status: 429, 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Retry-After': String(rateLimitResult.retryAfter || 60)
-        } 
-      }
-    );
+    return new Response(JSON.stringify({ error: RATE_LIMIT_ERROR }), {
+      status: 429,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': String(rateLimitResult.retryAfter || 60) },
+    });
   }
 
   try {
-    console.log('Disease detection request received');
+    const body = await req.json();
+    const { cropName, cropNameHi } = body;
+    const images: string[] = Array.isArray(body.images) && body.images.length > 0
+      ? body.images
+      : (body.imageBase64 ? [body.imageBase64] : []);
 
-    const { imageBase64, cropName, cropNameHi } = await req.json();
-    
-    // Validate image input
-    if (!imageBase64) {
-      return new Response(
-        JSON.stringify({ error: 'No image provided' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (images.length === 0) {
+      return new Response(JSON.stringify({ error: 'No image provided' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Validate image format (must be a data URL or base64 string)
-    if (typeof imageBase64 !== 'string') {
-      return new Response(
-        JSON.stringify({ error: 'Invalid image format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check image size
-    if (imageBase64.length > MAX_IMAGE_SIZE) {
-      return new Response(
-        JSON.stringify({ error: 'Image too large. Maximum size is 10MB.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Validate base64 data URL format
     const validImagePattern = /^data:image\/(jpeg|jpg|png|gif|webp);base64,/i;
-    if (!validImagePattern.test(imageBase64)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid image format. Supported formats: JPEG, PNG, GIF, WebP' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Validate crop name inputs
-    if (cropName && typeof cropName !== 'string') {
-      return new Response(
-        JSON.stringify({ error: 'Invalid crop name format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (cropNameHi && typeof cropNameHi !== 'string') {
-      return new Response(
-        JSON.stringify({ error: 'Invalid crop name format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    for (const img of images) {
+      if (typeof img !== 'string' || !validImagePattern.test(img)) {
+        return new Response(JSON.stringify({ error: 'Invalid image format' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (img.length > MAX_IMAGE_SIZE) {
+        return new Response(JSON.stringify({ error: 'Image too large. Maximum size is 10MB per image.' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY is not configured');
-      return new Response(
-        JSON.stringify({ error: GENERIC_ERROR }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: GENERIC_ERROR }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log(`Analyzing image for crop: ${cropName}`);
-
-    const cropKey = getCropKey(cropName);
+    const cropKey = getCropKey(cropName || '');
     const shortlist = cropKey
       ? CROP_DISEASES[cropKey].map((d, i) => `${i + 1}. ${d}`).join('\n')
       : 'No specific shortlist — use general MP crop disease knowledge but stay conservative.';
@@ -253,110 +289,100 @@ serve(async (req) => {
 
     const userPrompt = `Selected crop: ${cropName} (${cropNameHi}). Location: Madhya Pradesh, India.
 
+The farmer has provided ${images.length} photo(s) of the SAME plant from different angles / distances. Consider ALL images together as one case — cross-check symptoms across them.
+
 Follow the 5-step protocol. First confirm image quality and that the leaf actually matches "${cropName}". Then list visible symptoms in causeEn before naming any disease. Only choose from the shortlist provided in your instructions. Return ONLY the JSON object, no other text.`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-pro',
-        temperature: 0.1,
-        messages: [
-          { role: 'system', content: systemPromptFilled },
-          { 
-            role: 'user', 
-            content: [
-              { type: 'text', text: userPrompt },
-              { type: 'image_url', image_url: { url: imageBase64 } }
-            ]
-          }
-        ],
-        max_tokens: 2500,
-      }),
+    console.log(`Consensus engine: querying ${CONSENSUS_MODELS.length} models with ${images.length} image(s)`);
+
+    // Run all models in parallel
+    const results = await Promise.all(
+      CONSENSUS_MODELS.map((m) => callModel(m, systemPromptFilled, userPrompt, images, LOVABLE_API_KEY))
+    );
+
+    // If every call rate-limited / errored, surface that
+    const allErrored = results.every((r) => r && r.__error);
+    if (allErrored) {
+      const anyRateLimit = results.some((r: any) => r?.__error === 429);
+      return new Response(JSON.stringify({
+        detected: false,
+        error: anyRateLimit ? 'Service is busy. Please try again in a moment.' : ANALYSIS_ERROR,
+      }), { status: anyRateLimit ? 429 : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const valid = results.filter((r) => r && !r.__error) as any[];
+    const total = valid.length;
+
+    // Count "detected" votes and cluster by disease name
+    const detectedVotes = valid.filter((r) => r?.detected === true);
+    const notDetectedVotes = valid.filter((r) => r?.detected === false);
+
+    // If majority say "no disease / bad image", ask for retake
+    if (notDetectedVotes.length > detectedVotes.length) {
+      const reason = notDetectedVotes[0]?.message ||
+        'Images are unclear or symptoms not visible enough. Please retake 3 sharp daylight photos of the affected plant.';
+      return new Response(JSON.stringify({
+        detected: false,
+        message: reason,
+        consensus: { agree: notDetectedVotes.length, total, verdict: 'retake' },
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Cluster detected votes by fuzzy disease-name match
+    const clusters: { key: string; members: any[] }[] = [];
+    for (const vote of detectedVotes) {
+      const norm = normalizeDiseaseName(vote.diseaseNameEn || '');
+      const found = clusters.find((c) => namesMatch(c.key, norm));
+      if (found) found.members.push(vote);
+      else clusters.push({ key: norm, members: [vote] });
+    }
+    clusters.sort((a, b) => b.members.length - a.members.length);
+    const top = clusters[0];
+    const topCount = top ? top.members.length : 0;
+
+    console.log(`Consensus: ${topCount}/${total} models agree on top diagnosis`);
+
+    // Need at least 2 agreeing models AND a strict majority. Otherwise → recapture.
+    if (!top || topCount < 2 || topCount <= total / 2) {
+      return new Response(JSON.stringify({
+        detected: false,
+        message: `AI models disagreed on the diagnosis (${topCount}/${total} agreed). Please recapture 3 clear photos of the affected plant from different angles in good daylight, so the AIs can reach a confident consensus.`,
+        consensus: { agree: topCount, total, verdict: 'disagree' },
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Consensus reached — pick the highest-confidence answer from the winning cluster
+    const winner = top.members.reduce((best, cur) =>
+      (cur.confidence || 0) > (best.confidence || 0) ? cur : best, top.members[0]);
+
+    // Boost confidence if all models agreed
+    const agreementBoost = topCount === total ? 10 : topCount >= total - 1 ? 5 : 0;
+    const boostedConfidence = Math.min(99, Math.round((winner.confidence || 70) + agreementBoost));
+
+    const finalResult = {
+      ...winner,
+      confidence: boostedConfidence,
+      consensus: { agree: topCount, total, verdict: 'agree' },
+    };
+
+    // Low-confidence guard after consensus
+    if (typeof finalResult.confidence === 'number' && finalResult.confidence < 55) {
+      return new Response(JSON.stringify({
+        detected: false,
+        message: `Confidence too low (${finalResult.confidence}%) even after consensus. Please retake 3 clearer photos.`,
+        consensus: { agree: topCount, total, verdict: 'low-confidence' },
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    return new Response(JSON.stringify(finalResult), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        console.error('AI API rate limit exceeded');
-        return new Response(
-          JSON.stringify({ error: 'Service is busy. Please try again in a moment.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        console.error('AI API payment required');
-        return new Response(
-          JSON.stringify({ error: GENERIC_ERROR }),
-          { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      console.error('AI API error:', response.status);
-      return new Response(
-        JSON.stringify({ error: ANALYSIS_ERROR }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const aiResponse = await response.json();
-    const content = aiResponse.choices?.[0]?.message?.content;
-
-    if (!content) {
-      console.error('No content in AI response');
-      return new Response(
-        JSON.stringify({ detected: false, message: ANALYSIS_ERROR }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('AI analysis completed successfully');
-
-    // Parse the JSON response from AI
-    let analysisResult;
-    try {
-      // Extract JSON from the response (handle markdown code blocks)
-      let jsonStr = content;
-      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1].trim();
-      }
-      analysisResult = JSON.parse(jsonStr);
-    } catch (parseError) {
-      console.error('Failed to parse AI response as JSON');
-      // Return a fallback response
-      return new Response(
-        JSON.stringify({ 
-          detected: false, 
-          message: 'Unable to process analysis. Please try with a clearer image.' 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('Analysis complete:', analysisResult.detected ? 'Disease detected' : 'No disease detected');
-
-    // Low-confidence guard: don't show shaky diagnoses to farmers
-    if (analysisResult?.detected && typeof analysisResult.confidence === 'number' && analysisResult.confidence < 55) {
-      console.log(`Suppressing low-confidence result (${analysisResult.confidence})`);
-      analysisResult = {
-        detected: false,
-        message: `Symptoms are not clear enough for a confident diagnosis (${analysisResult.confidence}% match). Please retake the photo in daylight with the affected leaf filling the frame, or consult your nearest KVK extension officer.`,
-      };
-    }
-
-    return new Response(
-      JSON.stringify(analysisResult),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error: unknown) {
-    console.error('Error in detect-disease function');
-    return new Response(
-      JSON.stringify({ error: GENERIC_ERROR }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+  } catch (error) {
+    console.error('Error in detect-disease function', error);
+    return new Response(JSON.stringify({ error: GENERIC_ERROR }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
+
