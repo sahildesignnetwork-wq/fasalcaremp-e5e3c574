@@ -47,6 +47,9 @@ Deno.serve(async (req) => {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Fetch articles missing Hindi translations
+    const { data: articles, error } = await supabase
       .from("agri_news")
       .select("id, title, summary, content")
       .is("title_hi", null)
