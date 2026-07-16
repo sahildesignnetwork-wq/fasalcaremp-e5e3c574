@@ -140,6 +140,26 @@ const ResultScreen: React.FC = () => {
           </Button>
 
           <Button
+            variant="secondary"
+            size="lg"
+            className="w-full gap-3"
+            onClick={() => {
+              const slug = (diseaseResult.diseaseNameEn || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-');
+              const url = slug
+                ? `https://plantix.net/en/library/plant-diseases/search/?q=${encodeURIComponent(diseaseResult.diseaseNameEn)}`
+                : 'https://plantix.net/en/library/plant-diseases/';
+              window.open(url, '_blank', 'noopener,noreferrer');
+            }}
+          >
+            <ExternalLink className="w-5 h-5" />
+            {t('Plantix पर और जानें', 'Learn more on Plantix')}
+          </Button>
+
+          <Button
             variant="outline"
             size="lg"
             className="w-full gap-3"
