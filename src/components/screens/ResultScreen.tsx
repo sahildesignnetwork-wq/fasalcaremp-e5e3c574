@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, AlertTriangle, CheckCircle, ArrowRight, RefreshCw } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, CheckCircle, ArrowRight, RefreshCw, ExternalLink } from 'lucide-react';
 
 const ResultScreen: React.FC = () => {
   const { 
@@ -137,6 +137,26 @@ const ResultScreen: React.FC = () => {
           >
             {t('उपचार सलाह देखें', 'View Treatment Advisory')}
             <ArrowRight className="w-5 h-5" />
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="lg"
+            className="w-full gap-3"
+            onClick={() => {
+              const slug = (diseaseResult.diseaseNameEn || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-');
+              const url = slug
+                ? `https://plantix.net/en/library/plant-diseases/search/?q=${encodeURIComponent(diseaseResult.diseaseNameEn)}`
+                : 'https://plantix.net/en/library/plant-diseases/';
+              window.open(url, '_blank', 'noopener,noreferrer');
+            }}
+          >
+            <ExternalLink className="w-5 h-5" />
+            {t('Plantix पर और जानें', 'Learn more on Plantix')}
           </Button>
 
           <Button
