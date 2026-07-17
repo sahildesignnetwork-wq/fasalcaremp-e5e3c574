@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import OAuthConsent from "./components/OAuthConsent";
 import "./index.css";
 
 // Display + body fonts
@@ -17,4 +18,8 @@ import "@fontsource/noto-sans-devanagari/500.css";
 import "@fontsource/noto-sans-devanagari/600.css";
 import "@fontsource/noto-sans-devanagari/700.css";
 
-createRoot(document.getElementById("root")!).render(<App />);
+const isOAuthConsent = window.location.pathname === "/.lovable/oauth/consent";
+
+createRoot(document.getElementById("root")!).render(
+  isOAuthConsent ? <OAuthConsent /> : <App />,
+);
