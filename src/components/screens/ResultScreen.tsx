@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, AlertTriangle, CheckCircle, ArrowRight, RefreshCw, ExternalLink } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, CheckCircle, ArrowRight, RefreshCw } from 'lucide-react';
 
 const ResultScreen: React.FC = () => {
   const { 
