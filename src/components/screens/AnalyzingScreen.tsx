@@ -32,19 +32,6 @@ const AnalyzingScreen: React.FC = () => {
         return;
       }
 
-      // Disease detection requires an authenticated user (edge function enforces JWT).
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) {
-        toast({
-          title: t('कृपया लॉगिन करें', 'Please sign in'),
-          description: t(
-            'रोग पहचान के लिए लॉगिन आवश्यक है।',
-            'Sign in is required to use disease detection.'
-          ),
-        });
-        setCurrentScreen('login');
-        return;
-      }
 
       try {
         setTimeout(() => setStatus('identifying'), 800);
