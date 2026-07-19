@@ -1,9 +1,9 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Camera, Image, CheckCircle, RotateCcw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Camera, Image, CheckCircle, RotateCcw, Trash2, Plus } from 'lucide-react';
 
-const REQUIRED_SHOTS = 3;
+const MAX_SHOTS = 3;
 
 const CameraScreen: React.FC = () => {
   const { t, setCurrentScreen, selectedCrop, setCapturedImage, setCapturedImages, language } = useApp();
@@ -17,7 +17,7 @@ const CameraScreen: React.FC = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target?.result as string;
-      setShots((prev) => (prev.length < REQUIRED_SHOTS ? [...prev, data] : prev));
+      setShots((prev) => (prev.length < MAX_SHOTS ? [...prev, data] : prev));
     };
     reader.readAsDataURL(file);
     event.target.value = '';
@@ -27,12 +27,11 @@ const CameraScreen: React.FC = () => {
     setShots((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleConfirm = () => {
-    if (shots.length === REQUIRED_SHOTS) {
-      setCapturedImages(shots);
-      setCapturedImage(shots[0]);
-      setCurrentScreen('analyzing');
-    }
+  const handleAnalyze = () => {
+    if (shots.length === 0) return;
+    setCapturedImages(shots);
+    setCapturedImage(shots[0]);
+    setCurrentScreen('analyzing');
   };
 
   const handleBack = () => {
@@ -40,8 +39,8 @@ const CameraScreen: React.FC = () => {
     setCurrentScreen('cropSelect');
   };
 
-  const remaining = REQUIRED_SHOTS - shots.length;
-  const ready = shots.length === REQUIRED_SHOTS;
+  const canAddMore = shots.length < MAX_SHOTS;
+  const hasAtLeastOne = shots.length > 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -66,33 +65,21 @@ const CameraScreen: React.FC = () => {
         </div>
         <div className="text-center">
           <h1 className="text-lg font-bold text-primary-foreground">
-            {t('3 फोटो लें (सटीकता के लिए)', 'Take 3 Photos (for accuracy)')}
+            {t('फोटो अपलोड करें', 'Upload Photo')}
           </h1>
           <p className="text-sm text-primary-foreground/85 mt-1">
             {t(
-              'एक ही पौधे के अलग-अलग कोण से 3 स्पष्ट फोटो',
-              '3 clear shots of the same plant from different angles'
+              'बेहतर सटीकता के लिए 3 फोटो सुझाए जाते हैं',
+              'For better accuracy, 3 photos are recommended'
             )}
           </p>
         </div>
       </header>
 
-      {/* Progress dots */}
-      <div className="flex justify-center gap-2 mt-4">
-        {Array.from({ length: REQUIRED_SHOTS }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-2 rounded-full transition-all ${
-              i < shots.length ? 'w-8 bg-primary' : 'w-4 bg-muted'
-            }`}
-          />
-        ))}
-      </div>
-
       {/* Shot slots */}
       <main className="flex-1 p-4">
         <div className="grid grid-cols-3 gap-3">
-          {Array.from({ length: REQUIRED_SHOTS }).map((_, idx) => {
+          {Array.from({ length: MAX_SHOTS }).map((_, idx) => {
             const img = shots[idx];
             return (
               <div
@@ -118,6 +105,11 @@ const CameraScreen: React.FC = () => {
                     <Camera className="w-6 h-6 mx-auto text-muted-foreground" />
                     <p className="text-xs text-muted-foreground mt-1">
                       {t('फोटो', 'Photo')} {idx + 1}
+                      {idx > 0 && (
+                        <span className="block text-[10px] opacity-70">
+                          {t('वैकल्पिक', 'optional')}
+                        </span>
+                      )}
                     </p>
                   </div>
                 )}
@@ -132,6 +124,7 @@ const CameraScreen: React.FC = () => {
             💡 {t('बेहतर परिणाम के लिए', 'For best results')}:
           </p>
           <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+            <li>{t('कम से कम 1 फोटो जरूरी, 3 फोटो से सटीकता बढ़ती है', 'At least 1 photo required — 3 photos improve accuracy')}</li>
             <li>{t('पास से पत्ता, फिर मध्यम, फिर पूरा पौधा', 'Close-up leaf, then mid, then whole plant')}</li>
             <li>{t('दिन के उजाले में स्पष्ट फोकस', 'Daylight and sharp focus')}</li>
             <li>{t('प्रभावित हिस्से को फ्रेम में रखें', 'Keep the affected area in frame')}</li>
@@ -141,7 +134,7 @@ const CameraScreen: React.FC = () => {
 
       {/* Footer actions */}
       <footer className="p-4 pb-8 space-y-3 bg-background border-t border-border">
-        {!ready ? (
+        {canAddMore && (
           <>
             <Button
               variant="hero"
@@ -149,11 +142,10 @@ const CameraScreen: React.FC = () => {
               onClick={() => cameraInputRef.current?.click()}
               className="w-full gap-3"
             >
-              <Camera className="w-6 h-6" />
-              {t(`फोटो ${shots.length + 1} लें`, `Take Photo ${shots.length + 1}`)}
-              <span className="ml-1 text-sm opacity-80">
-                ({remaining} {t('बाकी', 'left')})
-              </span>
+              {shots.length === 0 ? <Camera className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+              {shots.length === 0
+                ? t('फोटो लें', 'Take Photo')
+                : t(`एक और फोटो जोड़ें (${shots.length}/${MAX_SHOTS})`, `Add another photo (${shots.length}/${MAX_SHOTS})`)}
             </Button>
             <Button
               variant="outline"
@@ -165,7 +157,9 @@ const CameraScreen: React.FC = () => {
               {t('गैलरी से चुनें', 'Choose from Gallery')}
             </Button>
           </>
-        ) : (
+        )}
+
+        {hasAtLeastOne && (
           <div className="flex gap-3">
             <Button
               variant="outline"
@@ -179,11 +173,13 @@ const CameraScreen: React.FC = () => {
             <Button
               variant="hero"
               size="xl"
-              onClick={handleConfirm}
+              onClick={handleAnalyze}
               className="flex-1 gap-2"
             >
               <CheckCircle className="w-6 h-6" />
-              {t('AI कंसेंसस जांच', 'AI Consensus Check')}
+              {shots.length === MAX_SHOTS
+                ? t('AI कंसेंसस जांच', 'AI Consensus Check')
+                : t(`जांच करें (${shots.length} फोटो)`, `Analyze (${shots.length} photo${shots.length > 1 ? 's' : ''})`)}
             </Button>
           </div>
         )}
