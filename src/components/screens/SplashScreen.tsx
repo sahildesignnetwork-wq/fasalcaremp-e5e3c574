@@ -40,7 +40,7 @@ const SplashScreen: React.FC = () => {
       <img
         src={openingLogoUrl}
         alt="Fasal Care crop health logo"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-contain"
       />
       <div className="absolute inset-0 bg-background/10" />
 
