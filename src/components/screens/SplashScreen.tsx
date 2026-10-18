@@ -5,6 +5,10 @@ const SplashScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
   const [showCredit, setShowCredit] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
+  const assetOrigin = window.location.hostname === 'localhost'
+    ? 'https://id-preview--9d495198-fbf3-46a0-ae42-abbe8f170ce7.lovable.app'
+    : window.location.origin;
+  const openingLogoUrl = new URL(openingLogo.url, assetOrigin).toString();
 
   useEffect(() => {
     // Show credit animation after logo appears
@@ -34,7 +38,7 @@ const SplashScreen: React.FC = () => {
       className={`relative min-h-screen overflow-hidden bg-gradient-hero flex flex-col items-center justify-center p-6 transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
     >
       <img
-        src={openingLogo.url}
+        src={openingLogoUrl}
         alt="Fasal Care crop health logo"
         className="absolute inset-0 h-full w-full object-cover"
       />
